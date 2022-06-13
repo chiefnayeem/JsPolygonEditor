@@ -12,115 +12,52 @@
 
 <body>
     <h2 class="title">Polygon Editor</h2>
+    <div>
+        <button onclick="POLYGON_EDITOR.populateEditorData(exampleEditorData1);">Add Example Data 1</button>
+        <button onclick="POLYGON_EDITOR.populateEditorData(exampleEditorData2);">Add Example Data 2</button>
+    </div>
     <div class="polygon-editor"></div>
+    <textarea id="editorData" rows="5"></textarea>
 
     <script src="https://cdn.jsdelivr.net/d3js/3.5.9/d3.min.js"></script>
     <script src="./PolygonEditor.js"></script>
-    
-    <!-- <script>
-        var dragging = false, drawing = false, startPoint;
 
-        var svg = d3.select('body').append('svg')
-            .attr('height', 540)
-            .attr('width', 960);
-        var points = [], g;
-        // behaviors
-        var dragger = d3.behavior.drag()
-            .on('drag', handleDrag)
-            .on('dragend', function (d) {
-                dragging = false;
-            });
-        svg.on('mouseup', function () {
-            if (dragging) return;
-            drawing = true;
-            startPoint = [d3.mouse(this)[0], d3.mouse(this)[1]];
-            if (svg.select('g.drawPoly').empty()) g = svg.append('g').attr('class', 'drawPoly');
-            if (d3.event.target.hasAttribute('is-handle')) {
-                closePolygon();
-                return;
-            };
-            points.push(d3.mouse(this));
-            g.select('polyline').remove();
-            var polyline = g.append('polyline').attr('points', points)
-                .style('fill', 'none')
-                .attr('stroke', '#000');
-            for (var i = 0; i < points.length; i++) {
-                g.append('circle')
-                    .attr('cx', points[i][0])
-                    .attr('cy', points[i][1])
-                    .attr('r', 4)
-                    .attr('fill', 'yellow')
-                    .attr('stroke', '#000')
-                    .attr('is-handle', 'true')
-                    .style({ cursor: 'pointer' });
+    <script>
+        const exampleEditorData1 = [{ "fill": "#A966B6", "points": [[390, 159.6875], [376, 367.6875], [623, 266.6875]], "opacity": 0.4 }, { "fill": "#CD0CA8", "points": [[338, 213.4875030517578], [156, 298.48748779296875], [290, 291.48748779296875]], "opacity": 0.4 }];
+
+        const exampleData2 = [{ "fill": "#A966B6", "points": [[390, 159.6875], [376, 367.6875], [623, 266.6875]], "opacity": 0.4 }, { "fill": "#5BD739", "points": [[172, 256.48748779296875], [116, 445.48748779296875], [232, 430.48748779296875], [258, 321.48748779296875]], "opacity": 0.4 }, { "fill": "#5BAAC1", "points": [[310, 96.48750305175781], [280, 206.4875030517578], [205, 92.48750305175781], [254, 121.48750305175781], [278, 53.48749923706055]], "opacity": 0.4 }, { "fill": "#38A324", "points": [[518, 36.48749923706055], [679, 268.48748779296875], [581, 385.48748779296875], [753, 345.48748779296875], [700, 48.48749923706055], [577, 64.48750305175781]], "opacity": 0.4 }, { "fill": "#E8C6F1", "points": [[237, 462.48748779296875], [438, 492.48748779296875], [477, 398.48748779296875], [335, 368.48748779296875]], "opacity": 0.4 }, { "fill": "#9C5CC0", "points": [[35, 195.4875030517578], [42, 308.48748779296875], [169, 243.4875030517578], [92, 198.4875030517578], [69, 248.4875030517578]], "opacity": 0.4 }];
+
+        const POLYGON_EDITOR = new PolygonEditor({
+            wrapperElementSelector: '.polygon-editor',
+            backgroundImageSrc: 'https://www.thai-property-group.com/wp-content/uploads/2019/06/Plan-bureau-Bangkok.jpg',
+            editorData: [
+                {
+                    "fill": "#A966B6",
+                    "points": [
+                        [
+                            390,
+                            159.6875
+                        ],
+                        [
+                            376,
+                            367.6875
+                        ],
+                        [
+                            623,
+                            266.6875
+                        ]
+                    ],
+                    "opacity": 0.4
+                }
+            ],
+            onChangeEditorData(data) {
+                console.log(data);
+                document.querySelector("#editorData").value = JSON.stringify(data);
             }
         });
 
-        function closePolygon() {
-            svg.select('g.drawPoly').remove();
-            var g = svg.append('g');
-            g.append('polygon')
-                .attr('points', points)
-                .style('fill', getRandomColor())
-                .style('opacity', '0.4');
-            for (var i = 0; i < points.length; i++) {
-                var circle = g.selectAll('circles')
-                    .data([points[i]])
-                    .enter()
-                    .append('circle')
-                    .attr('cx', points[i][0])
-                    .attr('cy', points[i][1])
-                    .attr('r', 4)
-                    .attr('fill', '#FDBC07')
-                    .attr('stroke', '#000')
-                    .attr('is-handle', 'true')
-                    .style({ cursor: 'move' })
-                    .call(dragger);
-            }
-            points.splice(0);
-            drawing = false;
-        }
-
-        svg.on('mousemove', function () {
-            if (!drawing) return;
-            var g = d3.select('g.drawPoly');
-            g.select('line').remove();
-            var line = g.append('line')
-                .attr('x1', startPoint[0])
-                .attr('y1', startPoint[1])
-                .attr('x2', d3.mouse(this)[0] + 2)
-                .attr('y2', d3.mouse(this)[1])
-                .attr('stroke', '#53DBF3')
-                .attr('stroke-width', 1);
-        })
-
-        function handleDrag() {
-            if (drawing) return;
-            var dragCircle = d3.select(this), newPoints = [], circle;
-            dragging = true;
-            var poly = d3.select(this.parentNode).select('polygon');
-            var circles = d3.select(this.parentNode).selectAll('circle');
-            dragCircle
-                .attr('cx', d3.event.x)
-                .attr('cy', d3.event.y);
-            for (var i = 0; i < circles[0].length; i++) {
-                circle = d3.select(circles[0][i]);
-                newPoints.push([circle.attr('cx'), circle.attr('cy')]);
-            }
-            poly.attr('points', newPoints);
-        }
-
-        function getRandomColor() {
-            var letters = '0123456789ABCDEF'.split('');
-            var color = '#';
-            for (var i = 0; i < 6; i++) {
-                color += letters[Math.floor(Math.random() * 16)];
-            }
-            return color;
-        }
-    </script> -->
-
-
+        POLYGON_EDITOR.init();
+    </script>
 </body>
 
 </html>

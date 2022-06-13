@@ -23,3 +23,8 @@ h2.title {
     border: 2px solid #a6a6a6;
     border-radius: 5px;
 }
+
+#editorData {
+    margin-top: 20px;
+    width: 800px;
+}

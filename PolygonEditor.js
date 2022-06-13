@@ -31,6 +31,7 @@ class PolygonEditor extends PolygonInstance {
      *  shapeOpacity: number,
      *  shapeOpacity: number,
      *  editorData: any[],
+     *  onChangeEditorData: function
      * }}
      */
     constructor(props) {
@@ -111,6 +112,11 @@ class PolygonEditor extends PolygonInstance {
 
         // Draw the polygon
         self.drawPolygonShape(polygonData);
+
+        // Hit the onChange event if available
+        if (typeof self.props.onChangeEditorData === "function") {
+            self.props.onChangeEditorData(self.editorData);
+        }
     }
 
     /**
@@ -308,29 +314,3 @@ class PolygonEditor extends PolygonInstance {
         });
     }
 }
-
-const POLYGON_EDITOR = new PolygonEditor({
-    wrapperElementSelector: '.polygon-editor',
-    backgroundImageSrc: 'https://www.thai-property-group.com/wp-content/uploads/2019/06/Plan-bureau-Bangkok.jpg',
-    editorData: [
-        {
-            "fill": "#A966B6",
-            "points": [
-                [
-                    390,
-                    159.6875
-                ],
-                [
-                    376,
-                    367.6875
-                ],
-                [
-                    623,
-                    266.6875
-                ]
-            ],
-            "opacity": 0.4
-        }
-    ]
-});
-POLYGON_EDITOR.init();
