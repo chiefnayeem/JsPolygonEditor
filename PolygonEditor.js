@@ -23,6 +23,7 @@ class PolygonEditor extends PolygonInstance {
     /**
      * @param props {{
      *  wrapperElementSelector: string,
+     *  backgroundImageSrc: string,
      * }}
      */
     constructor(props) {
@@ -32,6 +33,7 @@ class PolygonEditor extends PolygonInstance {
 
         this.state = {
             wrapperElementSelector: props?.wrapperElementSelector ?? '.polygon-editorX',
+            backgroundImageSrc: props?.backgroundImageSrc,
             dragging: false,
             drawing: false,
             startPoint: props?.startPoint ?? undefined,
@@ -56,26 +58,32 @@ class PolygonEditor extends PolygonInstance {
 
     drawComponentWrapper() {
         const self = this;
-        const { wrapperElementSelector } = self.state;
+        const { wrapperElementSelector, backgroundImageSrc } = self.state;
         const wrapperElement = document.querySelector(wrapperElementSelector);
+
+        if(backgroundImageSrc) {
+            wrapperElement.style.background = `url(${backgroundImageSrc})`;
+        }
     }
 
     drawSvgComponent() {
         const self = this;
         const { wrapperElementSelector } = self.state;
-        const wrapperElement = document.querySelector(wrapperElementSelector);
 
         return d3.select(wrapperElementSelector).append('svg')
-            .attr('height', wrapperElement?.style?.height)
-            .attr('width', wrapperElement?.style?.width);
+            .attr('height', '100%')
+            .attr('width', '100%');
     }
 
     editorActivities() {
         const self = this;
 
+        self.drawComponentWrapper();
+
         self.setState({
             svg: self.drawSvgComponent(),
         });
+
 
 
         // behaviors
@@ -89,5 +97,6 @@ class PolygonEditor extends PolygonInstance {
 
 const POLYGON_EDITOR = new PolygonEditor({
     wrapperElementSelector: '.polygon-editor',
+    backgroundImageSrc: 'https://www.thai-property-group.com/wp-content/uploads/2019/06/Plan-bureau-Bangkok.jpg',
 });
 POLYGON_EDITOR.init();
