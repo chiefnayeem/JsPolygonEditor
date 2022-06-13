@@ -88,6 +88,16 @@ class PolygonEditor extends PolygonInstance {
             .attr('width', '100%');
     }
 
+    changeComponentBackground(imageSrc) {
+        const self = this;
+        const { wrapperElementSelector, backgroundImageSrc } = self.state;
+        const wrapperElement = document.querySelector(wrapperElementSelector);
+
+        if (backgroundImageSrc) {
+            wrapperElement.style.background = `url(${imageSrc})`;
+        }
+    }
+
     getRandomColor() {
         let letters = '0123456789ABCDEF'.split('');
         let color = '#';
