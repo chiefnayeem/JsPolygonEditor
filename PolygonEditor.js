@@ -29,6 +29,8 @@ class PolygonEditor extends PolygonInstance {
      *  wrapperElementSelector: string,
      *  backgroundImageSrc: string,
      *  shapeOpacity: number,
+     *  shapeOpacity: number,
+     *  editorData: any[],
      * }}
      */
     constructor(props) {
@@ -51,6 +53,8 @@ class PolygonEditor extends PolygonInstance {
                 shapeOpacity: props?.shapeOpacity ?? 0.4,
             },
         };
+
+        this.editorData = props?.editorData && props?.editorData?.length > 0 ? props?.editorData : [];
 
         this.init = this.init.bind(this);
         this.editorActivities = this.editorActivities.bind(this);
@@ -94,15 +98,41 @@ class PolygonEditor extends PolygonInstance {
 
     closePolygon() {
         const self = this;
-        const { svg, points, dragger, shapeSettings } = self.state;
+        const { points, shapeSettings } = self.state;
+
+        const polygonData = {
+            fill: self.getRandomColor(),
+            points,
+            opacity: shapeSettings?.shapeOpacity,
+        };
+
+        // Append to the editor data for later usage
+        self.editorData.push(polygonData);
+
+        // Draw the polygon
+        self.drawPolygonShape(polygonData);
+    }
+
+    /**
+     * 
+     * @param data {{
+     *  fill: string,
+     *  opacity: number,
+     *  points: any[],
+     * }} 
+     */
+    drawPolygonShape(data) {
+        const self = this;
+        const { svg, dragger } = self.state;
+        const { points, fill, opacity } = data;
 
         svg.select('g.drawPoly').remove();
         let g = svg.append('g');
 
         g.append('polygon')
             .attr('points', points)
-            .style('fill', self.getRandomColor())
-            .style('opacity', shapeSettings?.shapeOpacity);
+            .style('fill', fill)
+            .style('opacity', opacity);
 
         for (let i = 0; i < points.length; i++) {
             let circle = g.selectAll('circles')
@@ -229,6 +259,20 @@ class PolygonEditor extends PolygonInstance {
             });
     }
 
+    /**
+     * Populate when we have some editor data
+     * @param editorData {any[]}
+     */
+    populateEditorData(editorData) {
+        const self = this;
+
+        if (editorData && editorData?.length > 0) {
+            editorData?.forEach((data) => {
+                self.drawPolygonShape(data);
+            });
+        }
+    }
+
     editorActivities() {
         const self = this;
 
@@ -244,6 +288,13 @@ class PolygonEditor extends PolygonInstance {
             dragger: self.pointerResizeDragBehaviors(),
         }, function (state) {
             const { svg } = state;
+            const { editorData } = self;
+
+
+            // Draw the polygons when we have some initial editor data
+            if (editorData && editorData?.length > 0) {
+                self.populateEditorData(editorData);
+            }
 
             // Activities on mouse up
             svg.on('mouseup', function () {
@@ -253,7 +304,7 @@ class PolygonEditor extends PolygonInstance {
             // Activities on mouse move
             svg.on('mousemove', function () {
                 self.handleSvgMouseMove(this);
-            })
+            });
         });
     }
 }
@@ -261,5 +312,25 @@ class PolygonEditor extends PolygonInstance {
 const POLYGON_EDITOR = new PolygonEditor({
     wrapperElementSelector: '.polygon-editor',
     backgroundImageSrc: 'https://www.thai-property-group.com/wp-content/uploads/2019/06/Plan-bureau-Bangkok.jpg',
+    editorData: [
+        {
+            "fill": "#A966B6",
+            "points": [
+                [
+                    390,
+                    159.6875
+                ],
+                [
+                    376,
+                    367.6875
+                ],
+                [
+                    623,
+                    266.6875
+                ]
+            ],
+            "opacity": 0.4
+        }
+    ]
 });
 POLYGON_EDITOR.init();
