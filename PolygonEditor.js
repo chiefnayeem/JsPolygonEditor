@@ -123,6 +123,10 @@ class PolygonEditor extends PolygonInstance {
         // Draw the polygon
         self.drawPolygonShape(polygonData);
 
+        setTimeout(() => {
+            self.populateEditorData(self.editorData);
+        }, 10);
+
         // Hit the onChange event if available
         if (typeof self.props.onChangeEditorData === "function") {
             self.props.onChangeEditorData(self.editorData);
@@ -130,14 +134,15 @@ class PolygonEditor extends PolygonInstance {
     }
 
     /**
-     * 
+     * Draw a polygon shape
      * @param data {{
      *  fill: string,
      *  opacity: number,
      *  points: any[],
      * }} 
+     * @param index {number}
      */
-    drawPolygonShape(data) {
+    drawPolygonShape(data, index = null) {
         const self = this;
         const { svg, dragger } = self.state;
         const { points, fill, opacity } = data;
@@ -149,6 +154,10 @@ class PolygonEditor extends PolygonInstance {
             .attr('points', points)
             .style('fill', fill)
             .style('opacity', opacity);
+
+        if (index > -1) {
+            g.attr('data-index', index);
+        }
 
         for (let i = 0; i < points.length; i++) {
             let circle = g.selectAll('circles')
@@ -186,6 +195,7 @@ class PolygonEditor extends PolygonInstance {
             dragging: true,
         });
 
+        let g = d3.select(referenceInstance.parentNode);
         const poly = d3.select(referenceInstance.parentNode).select('polygon');
         const circles = d3.select(referenceInstance.parentNode).selectAll('circle');
 
@@ -196,7 +206,19 @@ class PolygonEditor extends PolygonInstance {
             newPoints.push([circle.attr('cx'), circle.attr('cy')]);
         }
 
+        const gIndex = g?.attr('data-index');
+
+        if (gIndex && Number(gIndex) > -1) {
+            self.editorData[gIndex].points = newPoints;
+        }
+
+        // Set the points in the polgon
         poly.attr('points', newPoints);
+
+        // Hit the onChange event if available
+        if (typeof self.props.onChangeEditorData === "function") {
+            self.props.onChangeEditorData(self.editorData);
+        }
     }
 
     handleSvgMouseUp(referenceInstance) {
@@ -281,10 +303,15 @@ class PolygonEditor extends PolygonInstance {
      */
     populateEditorData(editorData) {
         const self = this;
+        const { wrapperElementSelector } = self.state;
+        const wrapperElement = document.querySelector(wrapperElementSelector);
 
         if (editorData && editorData?.length > 0) {
-            editorData?.forEach((data) => {
-                self.drawPolygonShape(data);
+            // Make the svg element empty as we are going to populate the array data from beginning
+            wrapperElement.querySelector('svg').innerHTML = '';
+
+            editorData?.forEach((data, index) => {
+                self.drawPolygonShape(data, index);
             });
         }
     }
