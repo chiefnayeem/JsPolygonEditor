@@ -28,6 +28,7 @@ class PolygonEditor extends PolygonInstance {
      * @param props {{
      *  wrapperElementSelector: string,
      *  backgroundImageSrc: string,
+     *  shapeOpacity: number,
      * }}
      */
     constructor(props) {
@@ -47,7 +48,7 @@ class PolygonEditor extends PolygonInstance {
             g: undefined,
 
             shapeSettings: {
-
+                shapeOpacity: props?.shapeOpacity ?? 0.4,
             },
         };
 
@@ -93,7 +94,7 @@ class PolygonEditor extends PolygonInstance {
 
     closePolygon() {
         const self = this;
-        const { svg, points, dragger } = self.state;
+        const { svg, points, dragger, shapeSettings } = self.state;
 
         svg.select('g.drawPoly').remove();
         let g = svg.append('g');
@@ -101,7 +102,7 @@ class PolygonEditor extends PolygonInstance {
         g.append('polygon')
             .attr('points', points)
             .style('fill', self.getRandomColor())
-            .style('opacity', '0.4');
+            .style('opacity', shapeSettings?.shapeOpacity);
 
         for (let i = 0; i < points.length; i++) {
             let circle = g.selectAll('circles')
@@ -244,10 +245,12 @@ class PolygonEditor extends PolygonInstance {
         }, function (state) {
             const { svg } = state;
 
+            // Activities on mouse up
             svg.on('mouseup', function () {
                 self.handleSvgMouseUp(this);
             });
 
+            // Activities on mouse move
             svg.on('mousemove', function () {
                 self.handleSvgMouseMove(this);
             })
