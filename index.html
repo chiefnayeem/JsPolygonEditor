@@ -6,39 +6,17 @@
     <meta name="viewport"
         content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
-    <style>
-        body {
-            margin: 100px;
-            border: 0;
-            padding: 0;
-            /* background: url(https://scx2.b-cdn.net/gfx/news/hires/2012/howcanyousee.png);
-            background-size: cover;
-            background-repeat: no-repeat; */
-        }
-
-        svg {
-            border: 1px solid;
-        }
-
-        path {
-            fill: lightsalmon;
-            stroke: salmon;
-            stroke-width: 5px;
-        }
-
-        h3 {
-            font-family: Arial, Helvetica, sans-serif;
-            margin: 0.5em 1em 0.2em 1em
-        }
-    </style>
+    <title>Polygon Editor on Custom Canvas</title>
+    <link rel="stylesheet" type="text/css" href="./PolygonEditor.css" />
 </head>
 
 <body>
-    
+    <div class="polygon-editor"></div>
 
     <script src="https://cdn.jsdelivr.net/d3js/3.5.9/d3.min.js"></script>
-    <script>
+    <script src="./PolygonEditor.js"></script>
+    
+    <!-- <script>
         var dragging = false, drawing = false, startPoint;
 
         var svg = d3.select('body').append('svg')
@@ -139,9 +117,9 @@
             }
             return color;
         }
-    </script>
+    </script> -->
 
-    
+
 </body>
 
 </html>

@@ -1,0 +1,29 @@
+body {
+    margin: 70px;
+    border: 0;
+    padding: 0;
+    /* background: url(https://scx2.b-cdn.net/gfx/news/hires/2012/howcanyousee.png);
+    background-size: cover;
+    background-repeat: no-repeat; */
+}
+
+svg {
+    border: 1px solid;
+}
+
+path {
+    fill: lightsalmon;
+    stroke: salmon;
+    stroke-width: 5px;
+}
+
+h3 {
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0.5em 1em 0.2em 1em
+}
+
+.polygon-editor {
+    width: 800px; 
+    height: 500px;
+    border: 1px solid red;
+}
