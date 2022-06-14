@@ -5,7 +5,12 @@ body {
     /* background: url(https://scx2.b-cdn.net/gfx/news/hires/2012/howcanyousee.png);
     background-size: cover;
     background-repeat: no-repeat; */
+    
 }
+
+body {
+    cursor:url('https://d29fhpw069ctt2.cloudfront.net/icon/image/49319/preview.svg'), auto !important;
+ }
 
 path {
     fill: lightsalmon;
@@ -27,4 +32,22 @@ h2.title {
 #editorData {
     margin-top: 20px;
     width: 800px;
+}
+
+.action-buttons {
+    display: flex;
+    margin-bottom: 10px;
+}
+
+.action-buttons button {
+    padding: 6px 10px;
+    border: 1px solid #a6a6a6;
+    border-radius: 3px;
+    background: #ffffff;
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+.action-buttons button:hover {
+    background: #f4f4f4;
 }

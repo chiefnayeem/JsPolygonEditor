@@ -12,7 +12,11 @@
 
 <body>
     <h2 class="title">Polygon Editor</h2>
-    <div>
+    <div class="action-buttons">
+        <button onclick="POLYGON_EDITOR.setEraserMode(true);">Eraser</button>
+    </div>
+
+    <div class="action-buttons">
         <button onclick="POLYGON_EDITOR.populateEditorData(exampleEditorData1);">Add Example Data 1</button>
         <button onclick="POLYGON_EDITOR.populateEditorData(exampleEditorData2);">Add Example Data 2</button>
         <button onclick="POLYGON_EDITOR.changeComponentBackground('https://i.stack.imgur.com/Bxlnz.jpg');">Change Background Image</button>

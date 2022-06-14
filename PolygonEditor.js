@@ -26,12 +26,13 @@ class PolygonInstance {
 class PolygonEditor extends PolygonInstance {
     /**
      * @param props {{
-     *  wrapperElementSelector: string,
-     *  backgroundImageSrc: string,
-     *  shapeOpacity: number,
-     *  shapeOpacity: number,
-     *  editorData: any[],
-     *  onChangeEditorData: function
+     *  wrapperElementSelector?: string,
+     *  backgroundImageSrc?: string,
+     *  shapeOpacity?: number,
+     *  shapeOpacity?: number,
+     *  editorData?: any[],
+     *  confirmOnErase?: boolean,
+     *  onChangeEditorData?: function,
      * }}
      */
     constructor(props) {
@@ -50,6 +51,9 @@ class PolygonEditor extends PolygonInstance {
             dragger: undefined,
             g: undefined,
 
+            eraserMode: false,
+            confirmOnErase: props?.confirmOnErase ?? true,
+
             shapeSettings: {
                 shapeOpacity: props?.shapeOpacity ?? 0.4,
             },
@@ -59,9 +63,18 @@ class PolygonEditor extends PolygonInstance {
 
         this.init = this.init.bind(this);
         this.editorActivities = this.editorActivities.bind(this);
+        this.drawComponentWrapper = this.drawComponentWrapper.bind(this);
+        this.drawPolygonShape = this.drawPolygonShape.bind(this);
+        this.drawSvgComponent = this.drawSvgComponent.bind(this);
+        this.closePolygon = this.closePolygon.bind(this);
+        this.getRandomColor = this.getRandomColor.bind(this);
+        this.changeComponentBackground = this.changeComponentBackground.bind(this);
         this.handleSvgMouseUp = this.handleSvgMouseUp.bind(this);
         this.handleResizePointerDrag = this.handleResizePointerDrag.bind(this);
         this.handleSvgMouseMove = this.handleSvgMouseMove.bind(this);
+        this.pointerResizeDragBehaviors = this.pointerResizeDragBehaviors.bind(this);
+        this.populateEditorData = this.populateEditorData.bind(this);
+        this.setEraserMode = this.setEraserMode.bind(this);
     }
 
     init() {
@@ -182,9 +195,9 @@ class PolygonEditor extends PolygonInstance {
 
     handleResizePointerDrag(referenceInstance) {
         const self = this;
-        const { drawing } = self.state;
+        const { drawing, eraserMode } = self.state;
 
-        if (drawing) {
+        if (drawing || eraserMode) {
             return;
         };
 
@@ -223,9 +236,9 @@ class PolygonEditor extends PolygonInstance {
 
     handleSvgMouseUp(referenceInstance) {
         const self = this;
-        const { dragging, svg, points } = self.state;
+        const { dragging, svg, points, eraserMode } = self.state;
 
-        if (dragging) {
+        if (eraserMode || dragging) {
             return;
         };
 
@@ -267,9 +280,9 @@ class PolygonEditor extends PolygonInstance {
 
     handleSvgMouseMove(referenceInstance) {
         const self = this;
-        const { drawing, startPoint } = self.state;
+        const { drawing, startPoint, eraserMode } = self.state;
 
-        if (!drawing) {
+        if (!drawing || eraserMode) {
             return;
         };
 
@@ -316,6 +329,14 @@ class PolygonEditor extends PolygonInstance {
         }
     }
 
+    setEraserMode(eraserMode = true) {
+        const self = this;
+
+        self.setState({
+            eraserMode,
+        });
+    }
+
     editorActivities() {
         const self = this;
 
@@ -347,6 +368,22 @@ class PolygonEditor extends PolygonInstance {
             // Activities on mouse move
             svg.on('mousemove', function () {
                 self.handleSvgMouseMove(this);
+            });
+
+            // Erase polygons
+
+            svg.select('g').on('click', function () {
+                const element = this;
+
+                if (self.state.eraserMode) {
+                    if(self.state.confirmOnErase) {
+                        if(!window.confirm("Are you sure to remove this polygon?")) {
+                            return;
+                        }
+                    }
+
+                    element.remove();
+                }
             });
         });
     }
