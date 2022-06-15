@@ -6,7 +6,7 @@ body {
 }
 
 .draw-mode {
-    cursor: url(./icons/edit.svg), alias;   
+    cursor: crosshair;   
 }
 
 .eraser-mode {
