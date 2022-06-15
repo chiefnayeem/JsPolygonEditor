@@ -2,15 +2,16 @@ body {
     margin: 70px;
     border: 0;
     padding: 0;
-    /* background: url(https://scx2.b-cdn.net/gfx/news/hires/2012/howcanyousee.png);
-    background-size: cover;
-    background-repeat: no-repeat; */
     
 }
 
-body {
-    cursor:url('https://d29fhpw069ctt2.cloudfront.net/icon/image/49319/preview.svg'), auto !important;
- }
+.draw-mode {
+    cursor: url(./icons/edit.svg), alias;   
+}
+
+.eraser-mode {
+    cursor: url(./icons/eraser.svg), alias;
+}
 
 path {
     fill: lightsalmon;

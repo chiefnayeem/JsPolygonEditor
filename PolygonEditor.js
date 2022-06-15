@@ -75,6 +75,7 @@ class PolygonEditor extends PolygonInstance {
         this.pointerResizeDragBehaviors = this.pointerResizeDragBehaviors.bind(this);
         this.populateEditorData = this.populateEditorData.bind(this);
         this.setEraserMode = this.setEraserMode.bind(this);
+        this.eraserActivities = this.eraserActivities.bind(this);
     }
 
     init() {
@@ -325,15 +326,54 @@ class PolygonEditor extends PolygonInstance {
 
             editorData?.forEach((data, index) => {
                 self.drawPolygonShape(data, index);
+                setTimeout(function() {
+                    self.eraserActivities();
+                }, 100);
             });
         }
     }
 
     setEraserMode(eraserMode = true) {
         const self = this;
+        const { wrapperElementSelector } = self.state;
+        const wrapperElement = document.querySelector(wrapperElementSelector);
 
         self.setState({
             eraserMode,
+        });
+
+        if (eraserMode) {
+            wrapperElement.classList.remove('draw-mode');
+            wrapperElement.classList.add('eraser-mode');
+        } else {
+            wrapperElement.classList.remove('eraser-mode');
+            wrapperElement.classList.add('draw-mode');
+        }
+    }
+
+    eraserActivities() {
+        const self = this;
+        const {svg} = self.state;
+
+        svg.selectAll('g').on('click', function () {
+            const element = this;
+
+            if (self.state.eraserMode) {
+                if (self.state.confirmOnErase) {
+                    if (!window.confirm("Are you sure to remove this polygon?")) {
+                        return;
+                    }
+                }
+
+                const index = element.getAttribute('data-index');
+                if (index > -1) {
+                    self.editorData.splice(index, 1);
+                }
+
+                element.remove();
+
+                self.populateEditorData(self.editorData);
+            }
         });
     }
 
@@ -370,21 +410,8 @@ class PolygonEditor extends PolygonInstance {
                 self.handleSvgMouseMove(this);
             });
 
-            // Erase polygons
-
-            svg.select('g').on('click', function () {
-                const element = this;
-
-                if (self.state.eraserMode) {
-                    if(self.state.confirmOnErase) {
-                        if(!window.confirm("Are you sure to remove this polygon?")) {
-                            return;
-                        }
-                    }
-
-                    element.remove();
-                }
-            });
+            // Eraser activities
+            self.eraserActivities();
         });
     }
 }
