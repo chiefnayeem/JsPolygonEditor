@@ -14,7 +14,8 @@
 <body>
     <h2 class="title">Polygon Editor</h2>
     <div class="action-buttons">
-        <button onclick="POLYGON_EDITOR.setEraserMode(false);">Draw</button>
+        <button onclick="POLYGON_EDITOR.setDrawMode(true);">Draw</button>
+        <button onclick="POLYGON_EDITOR.setDragMode(true);">Drag</button>
         <button onclick="POLYGON_EDITOR.setEraserMode(true);">Eraser</button>
     </div>
 
@@ -24,7 +25,7 @@
         <button onclick="POLYGON_EDITOR.changeComponentBackground('https://i.stack.imgur.com/Bxlnz.jpg');">Change
             Background Image</button>
     </div>
-    <div class="polygon-editor draw-mode"></div>
+    <div class="polygon-editor no-tool-selected"></div>
     <textarea id="editorData" rows="5"></textarea>
 
 

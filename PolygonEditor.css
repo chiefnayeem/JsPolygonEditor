@@ -2,11 +2,15 @@ body {
     margin: 70px;
     border: 0;
     padding: 0;
-    
+
+}
+
+.no-tool-selected {
+    cursor: default;
 }
 
 .draw-mode {
-    cursor: crosshair;   
+    cursor: crosshair;
 }
 
 .eraser-mode {
@@ -24,7 +28,7 @@ h2.title {
 }
 
 .polygon-editor {
-    width: 800px; 
+    width: 800px;
     height: 500px;
     border: 2px solid #a6a6a6;
     border-radius: 5px;

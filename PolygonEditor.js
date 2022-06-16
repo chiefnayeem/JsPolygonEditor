@@ -41,7 +41,7 @@ class PolygonEditor extends PolygonInstance {
         this.props = props;
 
         this.state = {
-            wrapperElementSelector: props?.wrapperElementSelector ?? '.polygon-editorX',
+            wrapperElementSelector: props?.wrapperElementSelector ?? '.polygon-editor',
             backgroundImageSrc: props?.backgroundImageSrc,
             dragging: false,
             drawing: false,
@@ -51,7 +51,12 @@ class PolygonEditor extends PolygonInstance {
             dragger: undefined,
             g: undefined,
 
+            noToolsSelectedMode: true,
+            drawMode: false,
             eraserMode: false,
+            dragMode: false,
+
+
             confirmOnErase: props?.confirmOnErase ?? true,
 
             shapeSettings: {
@@ -60,6 +65,13 @@ class PolygonEditor extends PolygonInstance {
         };
 
         this.editorData = props?.editorData && props?.editorData?.length > 0 ? props?.editorData : [];
+
+        this.editorToolsClassNames = {
+            noToolsSelectedMode: 'no-tool-selected',
+            drawMode: 'draw-mode',
+            eraserMode: 'eraser-mode',
+            dragMode: 'drag-mode',
+        };
 
         this.init = this.init.bind(this);
         this.editorActivities = this.editorActivities.bind(this);
@@ -74,7 +86,13 @@ class PolygonEditor extends PolygonInstance {
         this.handleSvgMouseMove = this.handleSvgMouseMove.bind(this);
         this.pointerResizeDragBehaviors = this.pointerResizeDragBehaviors.bind(this);
         this.populateEditorData = this.populateEditorData.bind(this);
+        this.wrapperUnselectAllTools = this.wrapperUnselectAllTools.bind(this);
+
+
+        this.setNoToolSelectedMode = this.setNoToolSelectedMode.bind(this);
         this.setEraserMode = this.setEraserMode.bind(this);
+        this.setDrawMode = this.setDrawMode.bind(this);
+        this.setDragMode = this.setDragMode.bind(this);
         this.eraserActivities = this.eraserActivities.bind(this);
     }
 
@@ -100,6 +118,22 @@ class PolygonEditor extends PolygonInstance {
         return d3.select(wrapperElementSelector).append('svg')
             .attr('height', '100%')
             .attr('width', '100%');
+    }
+
+    wrapperUnselectAllTools() {
+        const self = this;
+        const { wrapperElementSelector } = self.state;
+        const wrapperElement = document.querySelector(wrapperElementSelector);
+
+        Object.keys(self.editorToolsClassNames).forEach(function (key, index) {
+            const className = self.editorToolsClassNames[key];
+            wrapperElement.classList.remove(className);
+
+            // Uncheck all the states
+            self.setState({
+                [key]: false,
+            });
+        });
     }
 
     changeComponentBackground(imageSrc) {
@@ -191,9 +225,9 @@ class PolygonEditor extends PolygonInstance {
 
     handleResizePointerDrag(referenceInstance) {
         const self = this;
-        const { drawing, eraserMode } = self.state;
+        const { drawing, drawMode } = self.state;
 
-        if (drawing || eraserMode) {
+        if (drawing || !drawMode) {
             return;
         };
 
@@ -232,9 +266,9 @@ class PolygonEditor extends PolygonInstance {
 
     handleSvgMouseUp(referenceInstance) {
         const self = this;
-        const { dragging, svg, points, eraserMode } = self.state;
+        const { dragging, svg, points, drawMode } = self.state;
 
-        if (eraserMode || dragging) {
+        if (!drawMode || dragging ) {
             return;
         };
 
@@ -276,9 +310,9 @@ class PolygonEditor extends PolygonInstance {
 
     handleSvgMouseMove(referenceInstance) {
         const self = this;
-        const { drawing, startPoint, eraserMode } = self.state;
+        const { drawing, startPoint, drawMode } = self.state;
 
-        if (!drawing || eraserMode) {
+        if (!drawing || !drawMode) {
             return;
         };
 
@@ -341,22 +375,79 @@ class PolygonEditor extends PolygonInstance {
         }
     }
 
+    setNoToolSelectedMode() {
+        const self = this;
+        const { wrapperElementSelector } = self.state;
+        const wrapperElement = document.querySelector(wrapperElementSelector);
+
+        // Unselect all the active tools
+        self.wrapperUnselectAllTools();
+
+        // add the no tool selectd class name
+        wrapperElement.classList.add(
+            self.editorToolsClassNames.noToolsSelectedMode
+        );
+
+        self.setState({
+            noToolsSelectedMode: true,
+        });
+    }
+
     setEraserMode(eraserMode = true) {
         const self = this;
         const { wrapperElementSelector } = self.state;
         const wrapperElement = document.querySelector(wrapperElementSelector);
 
+        if (eraserMode) {
+            self.wrapperUnselectAllTools();
+            wrapperElement.classList.add(
+                self.editorToolsClassNames.eraserMode
+            );
+        } else {
+            self.setNoToolSelectedMode();
+        }
+
         self.setState({
             eraserMode,
         });
+    }
 
-        if (eraserMode) {
-            wrapperElement.classList.remove('draw-mode');
-            wrapperElement.classList.add('eraser-mode');
+    setDrawMode(drawMode = true) {
+        const self = this;
+        const { wrapperElementSelector } = self.state;
+        const wrapperElement = document.querySelector(wrapperElementSelector);
+
+        if (drawMode) {
+            self.wrapperUnselectAllTools();
+            wrapperElement.classList.add(
+                self.editorToolsClassNames.drawMode
+            );
         } else {
-            wrapperElement.classList.remove('eraser-mode');
-            wrapperElement.classList.add('draw-mode');
+            self.setNoToolSelectedMode();
         }
+
+        self.setState({
+            drawMode,
+        });
+    }
+
+    setDragMode(dragMode = true) {
+        const self = this;
+        const { wrapperElementSelector } = self.state;
+        const wrapperElement = document.querySelector(wrapperElementSelector);
+
+        if (dragMode) {
+            self.wrapperUnselectAllTools();
+            wrapperElement.classList.add(
+                self.editorToolsClassNames.dragMode
+            );
+        } else {
+            self.setNoToolSelectedMode();
+        }
+
+        self.setState({
+            dragMode,
+        });
     }
 
     eraserActivities() {
