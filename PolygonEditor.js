@@ -193,13 +193,37 @@ class PolygonEditor extends PolygonInstance {
         svg.select('g.drawPoly').remove();
         let g = svg.append('g');
 
-        g.append('polygon')
+        let polygon = g.append('polygon')
             .attr('points', points)
             .style('fill', fill)
             .style('opacity', opacity);
 
         if (index > -1) {
             g.attr('data-index', index);
+            g.attr('class', 'polygon-item');
+
+            let bbox = polygon._groups[0][0].getBBox();
+            let bbox2 = g._groups[0][0].getBBox();
+
+
+            bbox.x = 0;
+            bbox.y = 0;
+            bbox.width = 50;
+            bbox.height = 50;
+
+            g.datum({
+                x: 0,
+                y: 0
+            });
+
+            g.attr("transform", function (d) {
+                return "translate(" + d.x + "," + d.y + ")"
+            });
+
+            g.call(d3.drag().on("drag", function (d) {
+                console.log("OK", d);
+                d3.select(this).attr("transform", "translate(" + (d.x = d3.event.x) + "," + (d.y = d3.event.y) + ")")
+            }));
         }
 
         for (let i = 0; i < points.length; i++) {
@@ -213,8 +237,12 @@ class PolygonEditor extends PolygonInstance {
                 .attr('fill', '#FDBC07')
                 .attr('stroke', '#000')
                 .attr('is-handle', 'true')
-                .style({ cursor: 'move' })
+                .style("cursor", "move")
                 .call(dragger);
+
+            g.selectAll('circle')
+                .call(dragger);
+            console.log("circle", circle);
         }
 
         self.setState({
@@ -225,11 +253,51 @@ class PolygonEditor extends PolygonInstance {
 
     handleResizePointerDrag(referenceInstance) {
         const self = this;
-        const { drawing, drawMode } = self.state;
+        const { drawing, drawMode, points: polyPoints } = self.state;
 
-        if (drawing || !drawMode) {
+        if (drawing) {
             return;
         };
+
+
+
+
+
+        /*  var alteredPoints = [];
+         let bbox;
+       var selectedP = d3.select(referenceInstance);
+       var parentNode = d3.select(referenceInstance.parentNode);
+ 
+       //select only the elements belonging to the parent <g> of the selected circle
+       var circles = d3.select(referenceInstance.parentNode).selectAll('circle');
+       var polygon = d3.select(referenceInstance.parentNode).select('polygon');
+ 
+ 
+       var pointCX = d3.event.x;
+       var pointCY = d3.event.y;
+ 
+       //rendering selected circle on drag
+       selectedP.attr("cx", pointCX).attr("cy", pointCY);
+ 
+       //loop through the group of circle handles attatched to the polygon and push to new array
+       for (var i = 0; i < polyPoints.length; i++) {
+ 
+         var circleCoord = d3.select(circles._groups[0][i]);
+         var pointCoord = [circleCoord.attr("cx"), circleCoord.attr("cy")];
+         alteredPoints[i] = pointCoord;
+ 
+       }
+ 
+       //re-rendering polygon attributes to fit the handles
+       polygon.attr("points", alteredPoints);
+ 
+       bbox = parentNode._groups[0][0].getBBox();
+       console.log(bbox); */
+
+
+
+
+
 
         let dragCircle = d3.select(referenceInstance), newPoints = [], circle;
 
@@ -244,8 +312,8 @@ class PolygonEditor extends PolygonInstance {
 
         dragCircle.attr('cx', d3.event.x).attr('cy', d3.event.y);
 
-        for (let i = 0; i < circles[0].length; i++) {
-            circle = d3.select(circles[0][i]);
+        for (let i = 0; i < circles._groups[0].length; i++) {
+            circle = d3.select(circles._groups[0][i]);
             newPoints.push([circle.attr('cx'), circle.attr('cy')]);
         }
 
@@ -268,7 +336,7 @@ class PolygonEditor extends PolygonInstance {
         const self = this;
         const { dragging, svg, points, drawMode } = self.state;
 
-        if (!drawMode || dragging ) {
+        if (!drawMode || dragging) {
             return;
         };
 
@@ -304,7 +372,7 @@ class PolygonEditor extends PolygonInstance {
                 .attr('fill', 'yellow')
                 .attr('stroke', '#000')
                 .attr('is-handle', 'true')
-                .style({ cursor: 'pointer' });
+                .style('cursor', 'pointer');
         }
     }
 
@@ -332,10 +400,10 @@ class PolygonEditor extends PolygonInstance {
     pointerResizeDragBehaviors() {
         const self = this;
 
-        return d3.behavior.drag()
+        return d3.drag()
             .on('drag', function () {
                 self.handleResizePointerDrag(this);
-            }).on('dragend', function (d) {
+            }).on('end', function (d) {
                 self.setState({ dragging: false });
             });
     }
@@ -476,6 +544,10 @@ class PolygonEditor extends PolygonInstance {
         });
     }
 
+    polygonDragActies() {
+
+    }
+
     editorActivities() {
         const self = this;
 
@@ -511,6 +583,9 @@ class PolygonEditor extends PolygonInstance {
 
             // Eraser activities
             self.eraserActivities();
+
+            // Shape drag activities
+            self.polygonDragActies();
         });
     }
 }
