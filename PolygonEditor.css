@@ -56,10 +56,9 @@ h2.title {
 .action-buttons button:hover {
     background: #f4f4f4;
 }
-/* 
+
 circle.handle {
     fill: yellow;
     stroke: #cb9c0f;
     stroke-width: 2px;
-    cursor: move;
-  } */
+}

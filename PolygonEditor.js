@@ -221,7 +221,6 @@ class PolygonEditor extends PolygonInstance {
             });
 
             g.call(d3.drag().on("drag", function (d) {
-                console.log("OK", d);
                 d3.select(this).attr("transform", "translate(" + (d.x = d3.event.x) + "," + (d.y = d3.event.y) + ")")
             }));
         }
@@ -237,12 +236,12 @@ class PolygonEditor extends PolygonInstance {
                 .attr('fill', '#FDBC07')
                 .attr('stroke', '#000')
                 .attr('is-handle', 'true')
+                .classed("handle", true)
                 .style("cursor", "move")
                 .call(dragger);
 
             g.selectAll('circle')
                 .call(dragger);
-            console.log("circle", circle);
         }
 
         self.setState({
