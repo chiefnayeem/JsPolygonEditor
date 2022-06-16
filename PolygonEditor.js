@@ -140,11 +140,6 @@ class PolygonEditor extends PolygonInstance {
         setTimeout(() => {
             self.populateEditorData(self.editorData);
         }, 10);
-
-        // Hit the onChange event if available
-        if (typeof self.props.onChangeEditorData === "function") {
-            self.props.onChangeEditorData(self.editorData);
-        }
     }
 
     /**
@@ -326,10 +321,23 @@ class PolygonEditor extends PolygonInstance {
 
             editorData?.forEach((data, index) => {
                 self.drawPolygonShape(data, index);
-                setTimeout(function() {
+
+                // Hit the onChange event if available
+                if (typeof self.props.onChangeEditorData === "function") {
+                    self.props.onChangeEditorData(self.editorData);
+                }
+
+                setTimeout(function () {
                     self.eraserActivities();
                 }, 100);
             });
+
+            return;
+        }
+
+        // Hit the onChange event if available
+        if (typeof self.props.onChangeEditorData === "function") {
+            self.props.onChangeEditorData(self.editorData);
         }
     }
 
@@ -353,7 +361,7 @@ class PolygonEditor extends PolygonInstance {
 
     eraserActivities() {
         const self = this;
-        const {svg} = self.state;
+        const { svg } = self.state;
 
         svg.selectAll('g').on('click', function () {
             const element = this;
