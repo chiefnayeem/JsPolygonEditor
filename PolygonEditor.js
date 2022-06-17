@@ -594,11 +594,12 @@ class PolygonEditor extends PolygonInstance {
 
     setEditorData(editorData = []) {
         const self = this;
+        let clonedEditorData = [...editorData];
 
         if(editorData && editorData.length > 0) {
-            self.editorData = editorData;
+            self.editorData = clonedEditorData;
 
-            self.populateEditorData(editorData);
+            self.populateEditorData(self.editorData);
         }
     }
 }
