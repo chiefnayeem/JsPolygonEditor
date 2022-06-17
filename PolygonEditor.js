@@ -48,6 +48,10 @@ class PolygonEditor extends PolygonInstance {
             startPoint: props?.startPoint ?? undefined,
             svg: undefined,
             points: [],
+            transformPoints: {
+                x: 0,
+                y: 0,
+            },
             dragger: undefined,
             g: undefined,
 
@@ -157,12 +161,13 @@ class PolygonEditor extends PolygonInstance {
 
     closePolygon() {
         const self = this;
-        const { points, shapeSettings } = self.state;
+        const { points, shapeSettings, transformPoints } = self.state;
 
         const polygonData = {
             fill: self.getRandomColor(),
             points,
             opacity: shapeSettings?.shapeOpacity,
+            transformPoints,
         };
 
         // Append to the editor data for later usage
@@ -211,17 +216,46 @@ class PolygonEditor extends PolygonInstance {
             bbox.width = 50;
             bbox.height = 50;
 
+            let positionX = data?.transformPoints?.x;
+            let positionY = data?.transformPoints?.y;
+
             g.datum({
-                x: 0,
-                y: 0
+                x: positionX ?? 0,
+                y: positionY ?? 0
             });
 
             g.attr("transform", function (d) {
-                return "translate(" + d.x + "," + d.y + ")"
+                const positionX = data?.transformPoints?.x ?? d.x;
+                const positionY = data?.transformPoints?.y ?? d.y;
+
+                return "translate(" + positionX + "," + positionY + ")"
+            }).attr('data-translate-x', function (d) {
+                const positionX = data?.transformPoints?.x ?? d.x;
+                return positionX;
+            }).attr('data-translate-y', function (d) {
+                const positionY = data?.transformPoints?.y ?? d.y;
+                return positionY;
             });
 
             g.call(d3.drag().on("drag", function (d) {
-                d3.select(this).attr("transform", "translate(" + (d.x = d3.event.x) + "," + (d.y = d3.event.y) + ")")
+                const x = d.x = d3.event.x;
+                const y = d.y = d3.event.y;
+
+                const gElement = d3.select(this);
+
+                const gElementIndex = Number(gElement.attr('data-index'));
+
+                if (gElementIndex > -1) {
+                    self.editorData[gElementIndex].transformPoints = { x, y }
+                }
+
+                gElement.attr("transform", "translate(" + x + "," + y + ")")
+                    .attr('data-translate-x', x)
+                    .attr('data-translate-y', y);
+            }).on("end", function () {
+                setTimeout(() => {
+                    self.populateEditorData(self.editorData);
+                }, 5);
             }));
         }
 
