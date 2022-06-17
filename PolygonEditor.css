@@ -17,6 +17,32 @@ body {
     cursor: url(./icons/eraser.svg), alias;
 }
 
+.drag-mode {
+    
+}
+
+.drag-mode g {
+    cursor: grab;
+}
+
+.erased-shape {
+    animation: 0.5s erase-shape linear;
+}
+
+@keyframes erase-shape {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
 path {
     fill: lightsalmon;
     stroke: salmon;

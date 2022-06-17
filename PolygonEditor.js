@@ -194,6 +194,10 @@ class PolygonEditor extends PolygonInstance {
         const self = this;
         const { svg, dragger } = self.state;
         const { points, fill, opacity } = data;
+        let transformPoints = {
+            x: 0,
+            y: 0,
+        };
 
         svg.select('g.drawPoly').remove();
         let g = svg.append('g');
@@ -227,7 +231,8 @@ class PolygonEditor extends PolygonInstance {
             g.attr("transform", function (d) {
                 const positionX = data?.transformPoints?.x ?? d.x;
                 const positionY = data?.transformPoints?.y ?? d.y;
-
+                transformPoints.x = positionX;
+                transformPoints.y = positionY;
                 return "translate(" + positionX + "," + positionY + ")"
             }).attr('data-translate-x', function (d) {
                 const positionX = data?.transformPoints?.x ?? d.x;
@@ -238,6 +243,10 @@ class PolygonEditor extends PolygonInstance {
             });
 
             g.call(d3.drag().on("drag", function (d) {
+                if(!self.state.dragMode) {
+                    return;
+                }
+                
                 const x = d.x = d3.event.x;
                 const y = d.y = d3.event.y;
 
@@ -246,7 +255,7 @@ class PolygonEditor extends PolygonInstance {
                 const gElementIndex = Number(gElement.attr('data-index'));
 
                 if (gElementIndex > -1) {
-                    self.editorData[gElementIndex].transformPoints = { x, y }
+                    self.editorData[gElementIndex].transformPoints = { x, y };
                 }
 
                 gElement.attr("transform", "translate(" + x + "," + y + ")")
@@ -281,6 +290,7 @@ class PolygonEditor extends PolygonInstance {
         self.setState({
             points: [],
             drawing: false,
+            transformPoints,
         });
     }
 
@@ -291,47 +301,7 @@ class PolygonEditor extends PolygonInstance {
         if (drawing) {
             return;
         };
-
-
-
-
-
-        /*  var alteredPoints = [];
-         let bbox;
-       var selectedP = d3.select(referenceInstance);
-       var parentNode = d3.select(referenceInstance.parentNode);
- 
-       //select only the elements belonging to the parent <g> of the selected circle
-       var circles = d3.select(referenceInstance.parentNode).selectAll('circle');
-       var polygon = d3.select(referenceInstance.parentNode).select('polygon');
- 
- 
-       var pointCX = d3.event.x;
-       var pointCY = d3.event.y;
- 
-       //rendering selected circle on drag
-       selectedP.attr("cx", pointCX).attr("cy", pointCY);
- 
-       //loop through the group of circle handles attatched to the polygon and push to new array
-       for (var i = 0; i < polyPoints.length; i++) {
- 
-         var circleCoord = d3.select(circles._groups[0][i]);
-         var pointCoord = [circleCoord.attr("cx"), circleCoord.attr("cy")];
-         alteredPoints[i] = pointCoord;
- 
-       }
- 
-       //re-rendering polygon attributes to fit the handles
-       polygon.attr("points", alteredPoints);
- 
-       bbox = parentNode._groups[0][0].getBBox();
-       console.log(bbox); */
-
-
-
-
-
-
+        
         let dragCircle = d3.select(referenceInstance), newPoints = [], circle;
 
         // Set dragging
@@ -523,6 +493,7 @@ class PolygonEditor extends PolygonInstance {
             wrapperElement.classList.add(
                 self.editorToolsClassNames.drawMode
             );
+            
         } else {
             self.setNoToolSelectedMode();
         }
@@ -569,9 +540,8 @@ class PolygonEditor extends PolygonInstance {
                 if (index > -1) {
                     self.editorData.splice(index, 1);
                 }
-
+                
                 element.remove();
-
                 self.populateEditorData(self.editorData);
             }
         });
@@ -620,5 +590,15 @@ class PolygonEditor extends PolygonInstance {
             // Shape drag activities
             self.polygonDragActies();
         });
+    }
+
+    setEditorData(editorData = []) {
+        const self = this;
+
+        if(editorData && editorData.length > 0) {
+            self.editorData = editorData;
+
+            self.populateEditorData(editorData);
+        }
     }
 }
