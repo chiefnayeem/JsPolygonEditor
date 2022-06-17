@@ -290,7 +290,10 @@ class PolygonEditor extends PolygonInstance {
         self.setState({
             points: [],
             drawing: false,
-            transformPoints,
+            transformPoints: {
+                x: 0,
+                y: 0,
+            },
         });
     }
 
