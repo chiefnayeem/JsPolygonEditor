@@ -243,10 +243,10 @@ class PolygonEditor extends PolygonInstance {
             });
 
             g.call(d3.drag().on("drag", function (d) {
-                if(!self.state.dragMode) {
+                if (!self.state.dragMode) {
                     return;
                 }
-                
+
                 const x = d.x = d3.event.x;
                 const y = d.y = d3.event.y;
 
@@ -304,7 +304,7 @@ class PolygonEditor extends PolygonInstance {
         if (drawing) {
             return;
         };
-        
+
         let dragCircle = d3.select(referenceInstance), newPoints = [], circle;
 
         // Set dragging
@@ -496,7 +496,7 @@ class PolygonEditor extends PolygonInstance {
             wrapperElement.classList.add(
                 self.editorToolsClassNames.drawMode
             );
-            
+
         } else {
             self.setNoToolSelectedMode();
         }
@@ -543,11 +543,18 @@ class PolygonEditor extends PolygonInstance {
                 if (index > -1) {
                     self.editorData.splice(index, 1);
                 }
-                
+
                 element.remove();
                 self.populateEditorData(self.editorData);
             }
         });
+    }
+
+    zoomEditor(input) {
+        var currentZomValue = input.value;
+        document.querySelector('.polygon-editor').style.zoom = currentZomValue;
+        document.querySelector('.polygon-editor').style.top = 0;
+        document.querySelector('.polygon-editor').style.left = 0;
     }
 
     polygonDragActies() {
@@ -599,10 +606,14 @@ class PolygonEditor extends PolygonInstance {
         const self = this;
         let clonedEditorData = [...editorData];
 
-        if(editorData && editorData.length > 0) {
+        if (editorData && editorData.length > 0) {
             self.editorData = clonedEditorData;
 
             self.populateEditorData(self.editorData);
         }
     }
+}
+
+function calculatePercentage(value) {
+    return Math.round((Number(value) /5) * 100);
 }

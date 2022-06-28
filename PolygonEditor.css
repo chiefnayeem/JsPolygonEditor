@@ -58,6 +58,10 @@ h2.title {
     height: 500px;
     border: 2px solid #a6a6a6;
     border-radius: 5px;
+    transform: scale(1);
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 
 #editorData {
@@ -87,4 +91,12 @@ circle.handle {
     fill: yellow;
     stroke: #cb9c0f;
     stroke-width: 2px;
+}
+
+
+.editor-container {
+    border: 1px solid red;
+    position: relative;
+    height: 700px;
+    overflow: auto;
 }
