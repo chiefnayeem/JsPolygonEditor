@@ -554,13 +554,13 @@ class PolygonEditor extends PolygonInstance {
     zoomEditor(input) {
         const self = this;
 
-        let currentZomValue = input.value;
-        document.querySelector(self.state.wrapperElementSelector).style.zoom = currentZomValue;
+        let currentZoomValue = input.value;
+        document.querySelector(self.state.wrapperElementSelector).style.zoom = currentZoomValue;
         document.querySelector(self.state.wrapperElementSelector).style.top = 0;
         document.querySelector(self.state.wrapperElementSelector).style.left = 0;
     }
 
-    polygonDragActies() {
+    polygonDragActivities() {
 
     }
 
@@ -601,7 +601,7 @@ class PolygonEditor extends PolygonInstance {
             self.eraserActivities();
 
             // Shape drag activities
-            self.polygonDragActies();
+            self.polygonDragActivities();
         });
     }
 
