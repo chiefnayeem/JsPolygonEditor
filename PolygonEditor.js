@@ -552,10 +552,12 @@ class PolygonEditor extends PolygonInstance {
     }
 
     zoomEditor(input) {
-        var currentZomValue = input.value;
-        document.querySelector('.polygon-editor').style.zoom = currentZomValue;
-        document.querySelector('.polygon-editor').style.top = 0;
-        document.querySelector('.polygon-editor').style.left = 0;
+        const self = this;
+
+        let currentZomValue = input.value;
+        document.querySelector(self.state.wrapperElementSelector).style.zoom = currentZomValue;
+        document.querySelector(self.state.wrapperElementSelector).style.top = 0;
+        document.querySelector(self.state.wrapperElementSelector).style.left = 0;
     }
 
     polygonDragActies() {
