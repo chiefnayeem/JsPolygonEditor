@@ -629,5 +629,9 @@ class PolygonEditor extends PolygonInstance {
 }
 
 function calculatePercentage(value) {
+    if(Number(value) === 1) {
+        return 0;
+    }
+    
     return Math.round((Number(value) / 5) * 100);
 }
