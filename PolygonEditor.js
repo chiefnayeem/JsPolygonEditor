@@ -423,9 +423,10 @@ class PolygonEditor extends PolygonInstance {
         const { wrapperElementSelector } = self.state;
         const wrapperElement = document.querySelector(wrapperElementSelector);
 
+        // Make the svg element empty as we are going to populate the array data from beginning
+        wrapperElement.querySelector('svg').innerHTML = '';
+
         if (editorData && editorData?.length > 0) {
-            // Make the svg element empty as we are going to populate the array data from beginning
-            wrapperElement.querySelector('svg').innerHTML = '';
 
             editorData?.forEach((data, index) => {
                 self.drawPolygonShape(data, index);
@@ -602,18 +603,29 @@ class PolygonEditor extends PolygonInstance {
         });
     }
 
-    setEditorData(editorData = []) {
+    setEditorData(editorData = [], backgroundSrc = undefined) {
         const self = this;
-        let clonedEditorData = [...editorData];
+        let clonedEditorData = [...(editorData ?? [])];
 
-        if (editorData && editorData.length > 0) {
+        if (editorData) {
             self.editorData = clonedEditorData;
+            self.backgroundImageSrc = '';
 
             self.populateEditorData(self.editorData);
         }
+
+        if(backgroundSrc && backgroundSrc !== '') {
+            self.changeComponentBackground(backgroundSrc);
+        }
+    }
+
+    resetEditor() {
+        const self = this;
+        self.setEditorData([]);
+        self.changeComponentBackground('');
     }
 }
 
 function calculatePercentage(value) {
-    return Math.round((Number(value) /5) * 100);
+    return Math.round((Number(value) / 5) * 100);
 }
