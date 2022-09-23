@@ -1,0 +1,118 @@
+body {
+    margin: 70px;
+    border: 0;
+    padding: 0;
+
+}
+
+.no-tool-selected {
+    cursor: default;
+}
+
+.readonly-mode {
+
+}
+
+.readonly-mode circle {
+    display: none !important;
+}
+
+.draw-mode {
+    cursor: crosshair;
+}
+
+.eraser-mode {
+    cursor: url(../icons/eraser.svg), alias;
+}
+
+.drag-mode g {
+    cursor: grab;
+}
+
+.marker-mode {
+    cursor: pointer;
+}
+
+.erased-shape {
+    animation: 0.5s erase-shape linear;
+}
+
+@keyframes erase-shape {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+path {
+    fill: lightsalmon;
+    stroke: salmon;
+    stroke-width: 5px;
+}
+
+h2.title {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.polygon-editor {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.polygon-editor svg {
+    transform: scale(0.05);
+    --webkit-transform: scale(0.05);
+    -moz-transform: scale(0.05);
+    -moz-transform-origin: left center;
+    transform-origin: top left;
+    background-size: contain !important;
+    background-repeat: no-repeat!important;
+    background-position: left top;
+    width: auto;
+    height: auto;
+}
+
+#editorData {
+    width: 100%;
+    border: 1px solid #a6a6a6;
+    border-radius: 5px;
+    box-sizing: border-box;
+    outline: 0;
+    padding: 16px;
+}
+
+circle.handle {
+    fill: yellow;
+    stroke: #cb9c0f;
+    stroke-width: 2px;
+}
+
+
+.editor-container {
+    border: 1px solid #c6b8b8;
+    position: relative;
+    height: 67vh;
+    overflow: auto;
+}
+
+#add_map_zone_polygon_editor .action-buttons .btn{
+    padding: 4px 15px;
+    border-width: 2px;
+}
+
+#add_map_zone_polygon_editor .action-buttons .btn.active{
+    background-color: #575757 !important;
+    border-color: #b1b1b1 !important;
+}
+#add_map_zone_polygon_editor .action-buttons .btn.active:hover{
+    background-color: #575757 !important;
+    border-color: #b1b1b1 !important;
+}

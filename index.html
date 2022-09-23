@@ -1,94 +1,74 @@
 <!doctype html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
+  <meta charset="UTF-8">
+  <meta name="viewport"
         content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Polygon Editor on Custom Canvas</title>
-    <link rel="stylesheet" type="text/css" href="./PolygonEditor.css" />
-    <!-- <link rel="stylesheet" href="//code.jquery.com/ui/1.13.1/themes/base/jquery-ui.css"> -->
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Polygon Editor</title>
+  <link rel="stylesheet" type="text/css" href="./css/PolygonEditor.css" />
 </head>
-
 <body>
-    <h2 class="title">Polygon Editor</h2>
-    <div class="action-buttons">
-        <button onclick="POLYGON_EDITOR.setDrawMode(true);">Draw</button>
-        <button onclick="POLYGON_EDITOR.setDragMode(true);">Drag</button>
-        <button onclick="POLYGON_EDITOR.setEraserMode(true);">Eraser</button>
-    </div>
+<div class="p-10">
+  <div class="action-buttons" id="polygon-action-buttons">
+    <button type="button" class="p-1 px-3 rounded bg-green-700 text-white mr-2 hover:opacity-[0.8]" data-type="draw"
+            onclick="window.POLYGON_EDITOR.setDrawMode(true);">Draw
+    </button>
+    <button type="button" class="p-1 px-3 rounded bg-cyan-500 text-white mr-2 hover:opacity-[0.8]" data-type="drag"
+            onclick="window.POLYGON_EDITOR.setDragMode(true);">Drag
+    </button>
+    <button type="button" class="p-1 px-3 rounded bg-orange-500 text-white mr-2 hover:opacity-[0.8]" data-type="eraser"
+            onclick="window.POLYGON_EDITOR.setMarkerMode(true);">Add Marker
+    </button>
+    <button type="button" class="p-1 px-3 rounded bg-red-500 text-white mr-2 hover:opacity-[0.8]" data-type="eraser"
+            onclick="window.POLYGON_EDITOR.setEraserMode(true);">Eraser
+    </button>
+  </div>
 
-    <div>
-        <div style="text-align: right;" id="zoomPercent">0%</div>
-        <input 
-            type="range" 
-            min="1" 
-            max="5" 
-            step="0.0000005" 
-            value="1" 
-            oninput="POLYGON_EDITOR.zoomEditor(this); document.querySelector('#zoomPercent').innerHTML = calculatePercentage(this.value) + '%';" 
-            style="width: 100%;"
-        />
-    </div>
+  <div>
+    <div style="text-align: right;" id="zoomPercent">0%</div>
+    <input id="zoomSlider" type="range" min="1" max="50" step="0.0000005" value="1" oninput="window.POLYGON_EDITOR.zoomEditor(this); document.querySelector('#zoomPercent').innerHTML = calculatePercentage(this.value) + '%';" style="width: 100%;" />
+  </div>
 
-    <div class="action-buttons">
-        <button onclick="POLYGON_EDITOR.setEditorData(exampleEditorData1);">Add Example Data 1</button>
-        <button onclick="POLYGON_EDITOR.setEditorData(exampleEditorData2);">Add Example Data 2</button>
-        <button onclick="POLYGON_EDITOR.changeComponentBackground('https://i.stack.imgur.com/Bxlnz.jpg');">Change
-            Background Image</button>
-    </div>
-    <div class="editor-container">
+  <div class="flex flex-row gap-5">
+    <div class="flex-grow">
+      <div class="editor-container">
         <div class="polygon-editor no-tool-selected"></div>
+      </div>
     </div>
-    <textarea id="editorData" rows="5"></textarea>
+    <div class="w-[550px]">
+      <textarea id="editorData" rows="16"></textarea>
+    </div>
+  </div>
+</div>
 
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="./js/d3_v4.js"></script>
+<script src="./js/utils.js"></script>
+<script src="./js/PolygonEditor.js"></script>
+<script>
+  POLYGON_EDITOR = new PolygonEditor({
+    wrapperElementSelector: '.polygon-editor',
+    // backgroundImageSrc: "https://wallpaper.dog/large/10741222.jpg",
+    readOnlyMode: true,
+    editorData: [],
+    onChangeEditorData(data) {
+     document.querySelector("#editorData").value = JSON.stringify(data);
+    }
+  });
+  POLYGON_EDITOR.init();
+  POLYGON_EDITOR.changeComponentBackground("https://media.istockphoto.com/vectors/city-map-vector-illustration-vector-id1191674603?k=20&m=1191674603&s=612x612&w=0&h=xPDURSdVzLCZFP8CKoTHb_IdV23-IfZaHXtVrq3nOPw=")
 
-    <!-- <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
-    <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script> -->
-    <!-- <script src="https://cdn.jsdelivr.net/d3js/3.5.9/d3.min.js"></script> -->
-    <script src="https://d3js.org/d3.v4.min.js"></script>
-    <script src="./PolygonEditor.js"></script>
+  function setZoom(percent) {
+    POLYGON_EDITOR.zoomEditor({
+      value: percent,
+    });
 
-    <script>
-        const exampleEditorData1 = [{ "fill": "#A966B6", "points": [[390, 159.6875], [376, 367.6875], [623, 266.6875]], "opacity": 0.4 }, { "fill": "#CD0CA8", "points": [[338, 213.4875030517578], [156, 298.48748779296875], [290, 291.48748779296875]], "opacity": 0.4 }];
+    document.querySelector('#zoomPercent').innerHTML = `${calculatePercentage(percent)}%`;
+    document.querySelector('#zoomSlider').value = percent;
+  }
 
-        const exampleEditorData2 = [{ "fill": "#A966B6", "points": [[390, 159.6875], [376, 367.6875], [623, 266.6875]], "opacity": 0.4, "transformPoints": { "x": 0, "y": 0 } }, { "fill": "#97B52C", "points": [[50, 121.88749694824219], [60, 365.88751220703125], [257, 274.88751220703125], [139, 260.88751220703125], [262, 178.8874969482422]], "opacity": 0.4, "transformPoints": { "x": 0, "y": 0 } }, { "fill": "#1B8309", "points": [[686, 124.88749694824219], [620, 353.88751220703125], [772, 327.88751220703125], [772, 24.887500762939453]], "opacity": 0.4, "transformPoints": { "x": 0, "y": 0 } }];
-
-        const POLYGON_EDITOR = new PolygonEditor({
-            wrapperElementSelector: '.polygon-editor',
-            backgroundImageSrc: 'https://www.thai-property-group.com/wp-content/uploads/2019/06/Plan-bureau-Bangkok.jpg',
-            editorData: [
-                {
-                    "fill": "#A966B6",
-                    "points": [
-                        [
-                            390,
-                            159.6875
-                        ],
-                        [
-                            376,
-                            367.6875
-                        ],
-                        [
-                            623,
-                            266.6875
-                        ]
-                    ],
-                    "opacity": 0.4,
-                    transformPoints: {
-                        x: 0,
-                        y: 0,
-                    }
-                }
-            ],
-            onChangeEditorData(data) {
-                document.querySelector("#editorData").value = JSON.stringify(data);
-            }
-        });
-
-        POLYGON_EDITOR.init();
-    </script>
+  setZoom(24);
+</script>
 </body>
-
 </html>
