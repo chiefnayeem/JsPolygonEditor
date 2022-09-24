@@ -98,6 +98,8 @@ class PolygonEditor extends PolygonInstance {
     this.pointerResizeDragBehaviors = this.pointerResizeDragBehaviors.bind(this);
     this.populateEditorData = this.populateEditorData.bind(this);
     this.wrapperUnselectAllTools = this.wrapperUnselectAllTools.bind(this);
+    this.prioritizePolygonOrMarker = this.prioritizePolygonOrMarker.bind(this);
+    this.htmlTemplates = this.htmlTemplates.bind(this);
 
 
     this.setNoToolSelectedMode = this.setNoToolSelectedMode.bind(this);
@@ -380,7 +382,7 @@ class PolygonEditor extends PolygonInstance {
     if (d3.event.target.hasAttribute('is-handle')) {
       self.closePolygon();
       return;
-    };
+    }
 
     points.push(d3.mouse(referenceInstance));
     self.state.g.select('polyline').remove();
@@ -407,7 +409,7 @@ class PolygonEditor extends PolygonInstance {
 
     if (!drawing || !drawMode) {
       return;
-    };
+    }
 
     let g = d3.select('g.drawPoly');
 
@@ -475,6 +477,45 @@ class PolygonEditor extends PolygonInstance {
     if (typeof self.props.onChangeEditorData === "function") {
       self.props.onChangeEditorData(self.editorData);
     }
+  }
+
+  /**
+   * Prioritize polygon elements or marker elements
+   * Send to back-ward or front-ward the polygon/marker dom elements
+   * @param priority {"polygons" | "markers"}
+   * @return {void}
+   */
+  prioritizePolygonOrMarker(priority) {
+    const self = this;
+    const { wrapperElementSelector } = self.state;
+    const wrapperSvgElement = document.querySelector(`${wrapperElementSelector} svg`);
+    const polygonDomElements = document.querySelectorAll(`${wrapperElementSelector} .polygon-item`);
+    const markerDomElements = document.querySelectorAll(`${wrapperElementSelector} .marker-point`);
+
+    let svgGeneratedInnerHtmlAsString = '';
+
+    if(priority === "polygons") {
+      markerDomElements?.forEach((element) => {
+        svgGeneratedInnerHtmlAsString += element?.outerHTML;
+      });
+
+      polygonDomElements?.forEach((element) => {
+        svgGeneratedInnerHtmlAsString += element?.outerHTML;
+      });
+    } else if(priority === "markers") {
+      polygonDomElements?.forEach((element) => {
+        svgGeneratedInnerHtmlAsString += element?.outerHTML;
+      });
+
+      markerDomElements?.forEach((element) => {
+        svgGeneratedInnerHtmlAsString += element?.outerHTML;
+      });
+    }
+
+    wrapperSvgElement.innerHTML = svgGeneratedInnerHtmlAsString;
+
+    // recall the eraser events to bind them also
+    self.eraserActivities();
   }
 
   setNoToolSelectedMode() {
@@ -595,7 +636,7 @@ class PolygonEditor extends PolygonInstance {
     const self = this;
     const { svg } = self.state;
 
-    svg.selectAll('g').on('click', function () {
+    svg.selectAll('.polygon-item').on('click', function () {
       const element = this;
 
       if (self.state.eraserMode) {
@@ -622,23 +663,28 @@ class PolygonEditor extends PolygonInstance {
 
     svg.on('click', function () {
       if(self.state.markerMode) {
-        console.log(d3.event)
-        document.querySelector('svg').innerHTML =
-          document.querySelector('svg').innerHTML +
-          `
-          <g class="marker-point" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" style="translate: ${d3?.event?.offsetX - 8}px ${d3?.event?.offsetY - 25}px; transform: scale(0.6);">
-            <g transform="translate(-125.000000, -643.000000)">
-              <g transform="translate(37.000000, 169.000000)">
-                <g transform="translate(78.000000, 468.000000)">
-                  <g transform="translate(10.000000, 6.000000)">
-                    <path d="M14,0 C21.732,0 28,5.641 28,12.6 C28,23.963 14,36 14,36 C14,36 0,24.064 0,12.6 C0,5.641 6.268,0 14,0 Z" id="Shape" fill="#ffffff"></path>
-                    <circle id="Oval" fill="#ffffff" fill-rule="nonzero" cx="14" cy="14" r="7"></circle>
-                  </g>
-                </g>
-              </g>
-            </g>
-          </g>
-          `;
+        // we disable setting location pin on a location pin icon
+        if(!(
+          d3.event.target.nodeName === "svg" ||
+          d3.event.target.nodeName === "polygon"
+        )) {
+          return false;
+        }
+
+        const offsetX = d3?.event?.offsetX - 8;
+        const offsetY = d3?.event?.offsetY - 25;
+
+        setTimeout(() => {
+          document.querySelector('svg').innerHTML =
+            document.querySelector('svg').innerHTML +
+            self.htmlTemplates().markerIcon({
+              offsetX,
+              offsetY,
+            });
+
+          // we set the polygons
+          self.prioritizePolygonOrMarker("markers");
+        }, 70);
       }
     });
   }
@@ -728,6 +774,33 @@ class PolygonEditor extends PolygonInstance {
     const self = this;
     self.setEditorData([]);
     self.changeComponentBackground('');
+  }
+
+  htmlTemplates() {
+    return {
+      /**
+       * Get the marker svg icon element as string
+       * @param props {{
+       *  offsetX: number,
+       *  offsetY: number,
+       * }}
+       * @returns {string}
+       */
+      markerIcon: (props) => `
+        <g class="marker-point" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" style="translate: ${props?.offsetX}px ${props?.offsetY}px; transform: scale(0.6);">
+          <g transform="translate(-125.000000, -643.000000)">
+            <g transform="translate(37.000000, 169.000000)">
+              <g transform="translate(78.000000, 468.000000)">
+                <g transform="translate(10.000000, 6.000000)">
+                  <path d="M14,0 C21.732,0 28,5.641 28,12.6 C28,23.963 14,36 14,36 C14,36 0,24.064 0,12.6 C0,5.641 6.268,0 14,0 Z" id="Shape" fill="#ffffff"></path>
+                  <circle id="Oval" fill="#ffffff" fill-rule="nonzero" cx="14" cy="14" r="7"></circle>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      `,
+    }
   }
 }
 
