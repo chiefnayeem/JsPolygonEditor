@@ -103,6 +103,10 @@ circle.handle {
     overflow: auto;
 }
 
+.marker-point {
+    cursor: pointer;
+}
+
 #add_map_zone_polygon_editor .action-buttons .btn{
     padding: 4px 15px;
     border-width: 2px;
