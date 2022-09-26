@@ -1,48 +1,48 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Polygon Editor</title>
-    <link rel="stylesheet" type="text/css" href="./css/PolygonEditor.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Polygon Editor</title>
+  <link rel="stylesheet" type="text/css" href="./css/PolygonEditor.css" />
 </head>
 <body>
 <div class="p-10">
-    <div class="action-buttons" id="polygon-action-buttons">
-        <button type="button" class="p-1 px-3 rounded bg-green-700 text-white mr-2 hover:opacity-[0.8]" data-type="draw"
-                onclick="window.POLYGON_EDITOR.setDrawMode(true);">Draw
-        </button>
-        <button type="button" class="p-1 px-3 rounded bg-cyan-500 text-white mr-2 hover:opacity-[0.8]" data-type="drag"
-                onclick="window.POLYGON_EDITOR.setDragMode(true);">Drag
-        </button>
-        <button type="button" class="p-1 px-3 rounded bg-orange-500 text-white mr-2 hover:opacity-[0.8]"
-                data-type="eraser"
-                onclick="window.POLYGON_EDITOR.setMarkerMode(true);">Add Marker
-        </button>
-        <button type="button" class="p-1 px-3 rounded bg-red-500 text-white mr-2 hover:opacity-[0.8]" data-type="eraser"
-                onclick="window.POLYGON_EDITOR.setEraserMode(true);">Eraser
-        </button>
-    </div>
+  <div class="action-buttons" id="polygon-action-buttons">
+    <button type="button" class="p-1 px-3 rounded bg-green-700 text-white mr-2 hover:opacity-[0.8]" data-type="draw"
+            onclick="window.POLYGON_EDITOR.setDrawMode(true);">Draw
+    </button>
+    <button type="button" class="p-1 px-3 rounded bg-cyan-500 text-white mr-2 hover:opacity-[0.8]" data-type="drag"
+            onclick="window.POLYGON_EDITOR.setDragMode(true);">Drag
+    </button>
+    <button type="button" class="p-1 px-3 rounded bg-orange-500 text-white mr-2 hover:opacity-[0.8]"
+            data-type="eraser"
+            onclick="window.POLYGON_EDITOR.setMarkerMode(true);">Add Marker
+    </button>
+    <button type="button" class="p-1 px-3 rounded bg-red-500 text-white mr-2 hover:opacity-[0.8]" data-type="eraser"
+            onclick="window.POLYGON_EDITOR.setEraserMode(true);">Eraser
+    </button>
+  </div>
 
-    <div>
-        <div style="text-align: right;" id="zoomPercent">0%</div>
-        <input id="zoomSlider" type="range" min="1" max="50" step="0.0000005" value="1"
-               oninput="window.POLYGON_EDITOR.zoomEditor(this); document.querySelector('#zoomPercent').innerHTML = calculatePercentage(this.value) + '%';"
-               style="width: 100%;" />
-    </div>
+  <div>
+    <div style="text-align: right;" id="zoomPercent">0%</div>
+    <input id="zoomSlider" type="range" min="1" max="50" step="0.0000005" value="1"
+           oninput="window.POLYGON_EDITOR.zoomEditor(this); document.querySelector('#zoomPercent').innerHTML = calculatePercentage(this.value) + '%';"
+           style="width: 100%;" />
+  </div>
 
-    <div class="flex flex-row gap-5">
-        <div class="flex-grow">
-            <div class="editor-container">
-                <div class="polygon-editor no-tool-selected"></div>
-            </div>
-        </div>
-        <div class="w-[550px]">
-            <textarea id="editorData" rows="16"></textarea>
-        </div>
+  <div class="flex flex-row gap-5">
+    <div class="flex-grow">
+      <div class="editor-container">
+        <div class="polygon-editor no-tool-selected"></div>
+      </div>
     </div>
+    <div class="w-[550px]">
+      <textarea id="editorData" rows="16"></textarea>
+    </div>
+  </div>
 </div>
 
 <script src="https://cdn.tailwindcss.com"></script>
@@ -54,23 +54,29 @@
     wrapperElementSelector: '.polygon-editor',
     // backgroundImageSrc: "https://wallpaper.dog/large/10741222.jpg",
     readOnlyMode: true,
-    editorData: [{
-      "fill": "#704DFC",
-      "points": [[62.5, 147.5], [48.33333206176758, 268.3333435058594], [186.6666717529297, 233.3333282470703]],
-      "opacity": 0.4,
-      "transformPoints": {"x": 0, "y": 0}
-    }, {
-      "fill": "#FEE446",
-      "points": [[398.3333435058594, 110], [338.3333435058594, 259.1666564941406], [446.6666564941406, 259.1666564941406], [483.3333435058594, 170.8333282470703]],
-      "opacity": 0.4,
-      "transformPoints": {"x": 0, "y": 0}
-    }],
+    editorData: {
+      polygons: [{
+        "fill": "#704DFC",
+        "points": [[62.5, 147.5], [48.33333206176758, 268.3333435058594], [186.6666717529297, 233.3333282470703]],
+        "opacity": 0.4,
+        "transformPoints": { "x": 0, "y": 0 }
+      }, {
+        "fill": "#FEE446",
+        "points": [[398.3333435058594, 110], [338.3333435058594, 259.1666564941406], [446.6666564941406, 259.1666564941406], [483.3333435058594, 170.8333282470703]],
+        "opacity": 0.4,
+        "transformPoints": { "x": 0, "y": 0 }
+      }],
+      markers: [{"offsetX":234,"offsetY":83,"id":"8becd723-004c-488f-b145-2f49f6b1dd97"}],
+    },
     onChangeEditorData(data) {
       document.querySelector("#editorData").value = JSON.stringify(data);
+    },
+    markerProps: {
+      singlePointer: false,
     }
   });
   POLYGON_EDITOR.init();
-  POLYGON_EDITOR.changeComponentBackground("https://media.istockphoto.com/vectors/city-map-vector-illustration-vector-id1191674603?k=20&m=1191674603&s=612x612&w=0&h=xPDURSdVzLCZFP8CKoTHb_IdV23-IfZaHXtVrq3nOPw=")
+  POLYGON_EDITOR.changeComponentBackground("https://media.istockphoto.com/vectors/city-map-vector-illustration-vector-id1191674603?k=20&m=1191674603&s=612x612&w=0&h=xPDURSdVzLCZFP8CKoTHb_IdV23-IfZaHXtVrq3nOPw=");
 
   function setZoom(percent) {
     POLYGON_EDITOR.zoomEditor({

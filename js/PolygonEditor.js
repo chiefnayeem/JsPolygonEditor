@@ -2,6 +2,18 @@ class PolygonInstance {
   constructor() {
     this.props = {}; // Here props are readonly
     this.state = {};
+
+    this.utils = {
+      /**
+       * Generate uuid v4 string
+       * @returns {string}
+       */
+      uuidv4() {
+        return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+          (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+        );
+      }
+    };
   };
 
   /**
@@ -31,11 +43,18 @@ class PolygonEditor extends PolygonInstance {
    *  backgroundImageSrc?: string,
    *  shapeOpacity?: number,
    *  shapeOpacity?: number,
-   *  editorData?: any[],
+   *  editorData?: {
+   *   polygons: any[],
+   *   markers: any[],
+   * },
    *  confirmOnErase?: boolean,
    *  onChangeEditorData?: function,
    *  readOnly?: boolean,
    *  mounted?: function,
+   *  startPoint?: number,
+   *  markerProps: {
+   *    singlePointer?: boolean,
+   *  }
    * }}
    */
   constructor(props) {
@@ -65,7 +84,6 @@ class PolygonEditor extends PolygonInstance {
       dragMode: false,
       markerMode: false,
 
-
       confirmOnErase: props?.confirmOnErase ?? true,
 
       shapeSettings: {
@@ -73,7 +91,10 @@ class PolygonEditor extends PolygonInstance {
       },
     };
 
-    this.editorData = props?.editorData && props?.editorData?.length > 0 ? props?.editorData : [];
+    this.editorData = props?.editorData ? props?.editorData : {
+      polygons: [],
+      markers: [],
+    };
 
     this.editorToolsClassNames = {
       noToolsSelectedMode: 'no-tool-selected',
@@ -86,8 +107,10 @@ class PolygonEditor extends PolygonInstance {
 
     this.init = this.init.bind(this);
     this.editorActivities = this.editorActivities.bind(this);
+    this.markerActivities = this.markerActivities.bind(this);
     this.drawComponentWrapper = this.drawComponentWrapper.bind(this);
     this.drawPolygonShape = this.drawPolygonShape.bind(this);
+    this.setMarker = this.setMarker.bind(this);
     this.drawSvgComponent = this.drawSvgComponent.bind(this);
     this.closePolygon = this.closePolygon.bind(this);
     this.getRandomColor = this.getRandomColor.bind(this);
@@ -100,7 +123,6 @@ class PolygonEditor extends PolygonInstance {
     this.wrapperUnselectAllTools = this.wrapperUnselectAllTools.bind(this);
     this.prioritizePolygonOrMarker = this.prioritizePolygonOrMarker.bind(this);
     this.htmlTemplates = this.htmlTemplates.bind(this);
-
 
     this.setNoToolSelectedMode = this.setNoToolSelectedMode.bind(this);
     this.setEraserMode = this.setEraserMode.bind(this);
@@ -161,11 +183,11 @@ class PolygonEditor extends PolygonInstance {
 
     const bgImageInstance = new Image();
     bgImageInstance.src = imageSrc;
-    bgImageInstance.onload = function() {
+    bgImageInstance.onload = function () {
       wrapperElement.setAttribute('width', `${this.width}px`);
       wrapperElement.setAttribute('height', `${this.height}px`);
 
-      if(typeof callback === "function") {
+      if (typeof callback === "function") {
         callback(self, bgImageInstance);
       }
     };
@@ -192,7 +214,7 @@ class PolygonEditor extends PolygonInstance {
     };
 
     // Append to the editor data for later usage
-    self.editorData.push(polygonData);
+    self.editorData.polygons.push(polygonData);
 
     // Draw the polygon
     self.drawPolygonShape(polygonData);
@@ -211,7 +233,7 @@ class PolygonEditor extends PolygonInstance {
    * }}
    * @param index {number}
    */
-  drawPolygonShape(data, index = null) {
+  drawPolygonShape(data, index = -1) {
     const self = this;
     const { svg, dragger } = self.state;
     const { points, fill, opacity } = data;
@@ -254,7 +276,7 @@ class PolygonEditor extends PolygonInstance {
         const positionY = data?.transformPoints?.y ?? d.y;
         transformPoints.x = positionX;
         transformPoints.y = positionY;
-        return "translate(" + positionX + "," + positionY + ")"
+        return "translate(" + positionX + "," + positionY + ")";
       }).attr('data-translate-x', function (d) {
         const positionX = data?.transformPoints?.x ?? d.x;
         return positionX;
@@ -276,7 +298,7 @@ class PolygonEditor extends PolygonInstance {
         const gElementIndex = Number(gElement.attr('data-index'));
 
         if (gElementIndex > -1) {
-          self.editorData[gElementIndex].transformPoints = { x, y };
+          self.editorData.polygons[gElementIndex].transformPoints = { x, y };
         }
 
         gElement.attr("transform", "translate(" + x + "," + y + ")")
@@ -318,13 +340,69 @@ class PolygonEditor extends PolygonInstance {
     });
   }
 
+  /**
+   * Place a location marker point in the editor area
+   * @param data {{
+   *   offsetX: number,
+   *   offsetY: number,
+   * }}
+   * @param callback {function(data: {
+   *   id: string,
+   *   offsetX: number,
+   *   offsetY: number,
+   * })} | undefined
+   */
+  setMarker(data, callback = undefined) {
+    const self = this;
+    const uuid = self.utils.uuidv4();
+
+    document.querySelector('svg').innerHTML =
+      document.querySelector('svg').innerHTML +
+      self.htmlTemplates().markerIcon({
+        ...data,
+        id: uuid,
+      });
+
+    setTimeout(() => {
+      const markerElements = document.querySelectorAll(`svg g[data-id="${uuid}"]`);
+
+      markerElements?.forEach((element) => {
+        element.addEventListener('click', function (e) {
+          e.stopImmediatePropagation();
+          e.stopPropagation();
+          element?.remove();
+
+          const elementIndex = self.editorData?.markers?.findIndex((m => {
+            return Number(m?.offsetX) === Number(data?.offsetX) &&
+              Number(m?.offsetY) === Number(data?.offsetY);
+          }));
+
+          if(elementIndex > -1) {
+            // delete the data from the array in the state
+            self.editorData.markers.splice(elementIndex, 1);
+
+            // populate the whole editor data again
+            self.populateEditorData(self.editorData);
+          }
+        });
+      });
+    }, 300);
+
+    // we set the markers as priority
+    self.prioritizePolygonOrMarker("markers");
+
+    if(typeof callback === "function") {
+      callback(data);
+    }
+  }
+
   handleResizePointerDrag(referenceInstance) {
     const self = this;
     const { drawing, drawMode, points: polyPoints } = self.state;
 
     if (drawing) {
       return;
-    };
+    }
 
     let dragCircle = d3.select(referenceInstance), newPoints = [], circle;
 
@@ -347,10 +425,10 @@ class PolygonEditor extends PolygonInstance {
     const gIndex = g?.attr('data-index');
 
     if (gIndex && Number(gIndex) > -1) {
-      self.editorData[gIndex].points = newPoints;
+      self.editorData.polygons[gIndex].points = newPoints;
     }
 
-    // Set the points in the polgon
+    // Set the points in the polygon
     poly.attr('points', newPoints);
 
     // Hit the onChange event if available
@@ -365,7 +443,8 @@ class PolygonEditor extends PolygonInstance {
 
     if (!drawMode || dragging) {
       return;
-    };
+    }
+    ;
 
     self.setState({
       drawing: true,
@@ -437,7 +516,10 @@ class PolygonEditor extends PolygonInstance {
 
   /**
    * Populate when we have some editor data
-   * @param editorData {any[]}
+   * @param editorData {{
+   *   polygons: any[],
+   *   markers: any[],
+   * }}
    */
   populateEditorData(editorData) {
     const self = this;
@@ -454,21 +536,34 @@ class PolygonEditor extends PolygonInstance {
     // Make the svg element empty as we are going to populate the array data from beginning
     wrapperElement.querySelector('svg').innerHTML = '';
 
+    const { polygons, markers } = editorData;
 
-    if (editorData && editorData?.length > 0) {
+    if ((polygons && polygons?.length > 0) || (markers && markers?.length > 0)) {
+      if (polygons && polygons?.length > 0) {
+        polygons?.forEach((data, index) => {
+          self.drawPolygonShape(data, index);
 
-      editorData?.forEach((data, index) => {
-        self.drawPolygonShape(data, index);
+          // Hit the onChange event if available
+          if (typeof self.props.onChangeEditorData === "function") {
+            self.props.onChangeEditorData(self.editorData);
+          }
 
-        // Hit the onChange event if available
-        if (typeof self.props.onChangeEditorData === "function") {
-          self.props.onChangeEditorData(self.editorData);
-        }
+          setTimeout(function () {
+            self.eraserActivities();
+          }, 100);
+        });
+      }
 
-        setTimeout(function () {
-          self.eraserActivities();
-        }, 100);
-      });
+      if (markers && markers?.length > 0) {
+        markers?.forEach((marker) => {
+          self.setMarker(marker);
+
+          // Hit the onChange event if available
+          if (typeof self.props.onChangeEditorData === "function") {
+            self.props.onChangeEditorData(self.editorData);
+          }
+        });
+      }
 
       return;
     }
@@ -494,7 +589,7 @@ class PolygonEditor extends PolygonInstance {
 
     let svgGeneratedInnerHtmlAsString = '';
 
-    if(priority === "polygons") {
+    if (priority === "polygons") {
       markerDomElements?.forEach((element) => {
         svgGeneratedInnerHtmlAsString += element?.outerHTML;
       });
@@ -502,7 +597,7 @@ class PolygonEditor extends PolygonInstance {
       polygonDomElements?.forEach((element) => {
         svgGeneratedInnerHtmlAsString += element?.outerHTML;
       });
-    } else if(priority === "markers") {
+    } else if (priority === "markers") {
       polygonDomElements?.forEach((element) => {
         svgGeneratedInnerHtmlAsString += element?.outerHTML;
       });
@@ -620,7 +715,7 @@ class PolygonEditor extends PolygonInstance {
     const { wrapperElementSelector } = self.state;
     const wrapperElement = document.querySelector(wrapperElementSelector);
 
-    if(markerMode) {
+    if (markerMode) {
       self.wrapperUnselectAllTools();
       wrapperElement.classList.add(
         self.editorToolsClassNames.markerMode
@@ -645,7 +740,7 @@ class PolygonEditor extends PolygonInstance {
 
             const index = element.getAttribute('data-index');
             if (index > -1) {
-              self.editorData.splice(index, 1);
+              self.editorData.polygons.splice(index, 1);
             }
 
             element.remove();
@@ -662,28 +757,37 @@ class PolygonEditor extends PolygonInstance {
     const { svg } = self.state;
 
     svg.on('click', function () {
-      if(self.state.markerMode) {
+      if (self.state.markerMode) {
+
+        // disable when we should allow only one marker point
+        if(self.props?.markerProps?.singlePointer && self?.editorData?.markers?.length > 0) {
+          return;
+        }
+
         // we disable setting location pin on a location pin icon
-        if(!(
+        if (!(
           d3.event.target.nodeName === "svg" ||
           d3.event.target.nodeName === "polygon"
         )) {
+
+          // we hit the marker icon, so we remove it from the editor area
           return false;
         }
 
         const offsetX = d3?.event?.offsetX - 8;
         const offsetY = d3?.event?.offsetY - 25;
 
-        setTimeout(() => {
-          document.querySelector('svg').innerHTML =
-            document.querySelector('svg').innerHTML +
-            self.htmlTemplates().markerIcon({
-              offsetX,
-              offsetY,
-            });
+        const data = { offsetX, offsetY };
 
-          // we set the polygons
-          self.prioritizePolygonOrMarker("markers");
+        // update the editor data as we are adding a new marker point
+        setTimeout(() => {
+          self.setMarker(data, (markerData) => {
+            // update the editor data
+            self.editorData.markers.push(markerData);
+
+            // populate the whole editor data again
+            self.populateEditorData(self.editorData);
+          });
         }, 70);
       }
     });
@@ -724,7 +828,7 @@ class PolygonEditor extends PolygonInstance {
 
 
       // Draw the polygons when we have some initial editor data
-      if (editorData && editorData?.length > 0) {
+      if (editorData) {
         self.populateEditorData(editorData);
       }
 
@@ -747,16 +851,19 @@ class PolygonEditor extends PolygonInstance {
       // Marker Mode Activities
       self.markerActivities();
 
-      // Run the moundted activities if found
+      // Run the mounted activities if found
       if (self.props.mounted && typeof self.props.mounted === "function") {
         self.props.mounted(self);
       }
     });
   }
 
-  setEditorData(editorData = [], backgroundSrc = undefined) {
+  setEditorData(editorData = { polygons: [], markers: [] }, backgroundSrc = undefined) {
     const self = this;
-    let clonedEditorData = [...(editorData ?? [])];
+    let clonedEditorData = editorData ? editorData : {
+      polygons: [],
+      markers: [],
+    };
 
     if (editorData) {
       self.editorData = clonedEditorData;
@@ -781,13 +888,14 @@ class PolygonEditor extends PolygonInstance {
       /**
        * Get the marker svg icon element as string
        * @param props {{
+       *  id?: string,
        *  offsetX: number,
        *  offsetY: number,
        * }}
        * @returns {string}
        */
       markerIcon: (props) => `
-        <g class="marker-point" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" style="translate: ${props?.offsetX}px ${props?.offsetY}px; transform: scale(0.6);">
+        <g class="marker-point" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" style="translate: ${props?.offsetX}px ${props?.offsetY}px; transform: scale(0.6);" data-id="${props?.id}">
           <g transform="translate(-125.000000, -643.000000)">
             <g transform="translate(37.000000, 169.000000)">
               <g transform="translate(78.000000, 468.000000)">
@@ -800,7 +908,7 @@ class PolygonEditor extends PolygonInstance {
           </g>
         </g>
       `,
-    }
+    };
   }
 }
 
