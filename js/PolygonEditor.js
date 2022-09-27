@@ -95,6 +95,10 @@ class PolygonEditor extends PolygonInstance {
 
       confirmOnErase: props?.confirmOnErase ?? true,
 
+      marker: {
+        singlePointer: props?.markerProps?.singlePointer ?? false,
+      },
+
       shapeSettings: {
         shapeOpacity: props?.shapeOpacity ?? 0.4,
       },
@@ -119,8 +123,6 @@ class PolygonEditor extends PolygonInstance {
     this.markerActivities = this.markerActivities.bind(this);
     this.drawComponentWrapper = this.drawComponentWrapper.bind(this);
     this.drawPolygonShape = this.drawPolygonShape.bind(this);
-    this.registerPolygonShapesDragEventHandlers = this.registerPolygonShapesDragEventHandlers.bind(this);
-    this.reCallPolygonDragEvents = this.reCallPolygonDragEvents.bind(this);
     this.setMarker = this.setMarker.bind(this);
     this.drawSvgComponent = this.drawSvgComponent.bind(this);
     this.closePolygon = this.closePolygon.bind(this);
@@ -140,14 +142,24 @@ class PolygonEditor extends PolygonInstance {
     this.setReadOnlyMode = this.setReadOnlyMode.bind(this);
     this.setDrawMode = this.setDrawMode.bind(this);
     this.setDragMode = this.setDragMode.bind(this);
+    this.setMarkerMode = this.setMarkerMode.bind(this);
+    this.setMultipleMarkerMode = this.setMultipleMarkerMode.bind(this);
     this.eraserActivities = this.eraserActivities.bind(this);
   }
 
+  /**
+   * Initialize the instance
+   * @return {void}
+   */
   init() {
     const self = this;
     self.editorActivities();
   }
 
+  /**
+   * Prepare the editor wrapper
+   * @return {void}
+   */
   drawComponentWrapper() {
     const self = this;
     const { wrapperElementSelector, backgroundImageSrc } = self.state;
@@ -158,6 +170,11 @@ class PolygonEditor extends PolygonInstance {
     }
   }
 
+  /**
+   * Draw a svg component in the editor area
+   * NB: This is not a polygon shape
+   * @returns {*}
+   */
   drawSvgComponent() {
     const self = this;
     const { wrapperElementSelector } = self.state;
@@ -167,6 +184,10 @@ class PolygonEditor extends PolygonInstance {
       .attr('width', '100%');
   }
 
+  /**
+   * Unselect all the wrapper tools
+   * @return {void}
+   */
   wrapperUnselectAllTools() {
     const self = this;
     const { wrapperElementSelector } = self.state;
@@ -183,6 +204,12 @@ class PolygonEditor extends PolygonInstance {
     });
   }
 
+  /**
+   * Change the editor's background clip
+   * @param imageSrc {string}
+   * @param callback {function(targetInstance: any, imageInstance: any) | undefined}
+   * @return {void}
+   */
   changeComponentBackground(imageSrc, callback = undefined) {
     const self = this;
     const { wrapperElementSelector, backgroundImageSrc } = self.state;
@@ -204,6 +231,10 @@ class PolygonEditor extends PolygonInstance {
     };
   }
 
+  /**
+   * Generate random color codes as string
+   * @returns {string}
+   */
   getRandomColor() {
     let letters = '0123456789ABCDEF'.split('');
     let color = '#';
@@ -213,6 +244,10 @@ class PolygonEditor extends PolygonInstance {
     return color;
   }
 
+  /**
+   * Close drawing the polygon shape
+   * @return {void}
+   */
   closePolygon() {
     const self = this;
     const { points, shapeSettings, transformPoints } = self.state;
@@ -243,6 +278,7 @@ class PolygonEditor extends PolygonInstance {
    *  points: any[],
    * }}
    * @param index {number}
+   * @return {void}
    */
   drawPolygonShape(data, index = -1) {
     const self = this;
@@ -296,53 +332,10 @@ class PolygonEditor extends PolygonInstance {
         return positionY;
       });
 
-      self.registerPolygonShapesDragEventHandlers(g, "self");
-    }
 
-    for (let i = 0; i < points.length; i++) {
-      let circle = g.selectAll('circles')
-        .data([points[i]])
-        .enter()
-        .append('circle')
-        .attr('cx', points[i][0])
-        .attr('cy', points[i][1])
-        .attr('r', 4)
-        .attr('fill', '#FDBC07')
-        .attr('stroke', '#000')
-        .attr('is-handle', 'true')
-        .classed("handle", true)
-        .style("cursor", "move");
-      // .call(dragger);
-
-      self.registerPolygonShapesDragEventHandlers(
-        g.selectAll('circle'),
-        "circle"
-      );
-    }
-
-    self.setState({
-      points: [],
-      drawing: false,
-      transformPoints: {
-        x: 0,
-        y: 0,
-      },
-    });
-  }
-
-  /**
-   * register the polygon shapes drag event handlers
-   * @param element {HTMLElement}
-   * @param type {"self" | "circle"}
-   */
-  registerPolygonShapesDragEventHandlers(element, type) {
-    const self = this;
-    const { dragger } = self.state;
-
-    if (type === "self") {
-      element.call(d3.drag().on("drag", function (d) {
-        console.log(d);
-        if (!self.state.dragMode) {
+      // register the drag functionalities for this polygon element
+      g.call(d3.drag().on("drag", function (d) {
+        if (!self.state.dragMode || self.state.readOnlyMode) {
           return;
         }
 
@@ -367,17 +360,32 @@ class PolygonEditor extends PolygonInstance {
       }));
     }
 
-    if (type === "circle") {
-      element.call(dragger);
+    for (let i = 0; i < points.length; i++) {
+      let circle = g.selectAll('circles')
+        .data([points[i]])
+        .enter()
+        .append('circle')
+        .attr('cx', points[i][0])
+        .attr('cy', points[i][1])
+        .attr('r', 4)
+        .attr('fill', '#FDBC07')
+        .attr('stroke', '#000')
+        .attr('is-handle', 'true')
+        .classed("handle", true)
+        .style("cursor", "move");
+
+      // register the circle pointer drag functionalities
+      g.selectAll('circle').call(dragger);
     }
-  }
 
-
-  reCallPolygonDragEvents() {
-    const self = this;
-    const { wrapperElementSelector } = self.state;
-    const circleElements = d3.selectAll(`${wrapperElementSelector} svg circle`);
-    self.registerPolygonShapesDragEventHandlers(circleElements, "circle");
+    self.setState({
+      points: [],
+      drawing: false,
+      transformPoints: {
+        x: 0,
+        y: 0,
+      },
+    });
   }
 
   /**
@@ -390,55 +398,77 @@ class PolygonEditor extends PolygonInstance {
    *   offsetX: number,
    *   offsetY: number,
    * })} | undefined
+   * @return {void}
    */
   setMarker(data, callback = undefined) {
     const self = this;
     const uuid = self.utils.uuidv4();
+    const { svg } = self.state;
 
-    document.querySelector('svg').innerHTML =
-      document.querySelector('svg').innerHTML +
-      self.htmlTemplates().markerIcon({
-        ...data,
-        id: uuid,
-      });
+    svg.append('g')
+      .attr('class', 'marker-point')
+      .attr('data-id', uuid)
+      .style('translate', `${data?.offsetX}px ${data?.offsetY}px`)
+      .style('transform', 'scale(0.6)')
+      .html(
+        self.htmlTemplates().markerIcon()
+      )
+      .on('click', function () {
+        if(self.state.readOnlyMode) {
+          return;
+        }
 
-    // Delete marker event
-    setTimeout(() => {
-      const markerElements = document.querySelectorAll(`svg g[data-id="${uuid}"]`);
+        this?.remove();
 
-      markerElements?.forEach((element) => {
-        element.addEventListener('click', function (e) {
-          e.stopImmediatePropagation();
-          e.stopPropagation();
-          element?.remove();
+        const elementIndex = self.editorData?.markers?.findIndex((m => {
+          return Number(m?.offsetX) === Number(data?.offsetX) &&
+            Number(m?.offsetY) === Number(data?.offsetY);
+        }));
 
-          const elementIndex = self.editorData?.markers?.findIndex((m => {
-            return Number(m?.offsetX) === Number(data?.offsetX) &&
-              Number(m?.offsetY) === Number(data?.offsetY);
-          }));
+        if (elementIndex > -1) {
+          // delete the data from the array in the state
+          self.editorData.markers.splice(elementIndex, 1);
 
-          if (elementIndex > -1) {
-            // delete the data from the array in the state
-            self.editorData.markers.splice(elementIndex, 1);
+          // populate the whole editor data again
+          self.populateEditorData(self.editorData);
+        }
+      })
+      .call(d3.drag().on("drag", function () {
+        if(self.state.readOnlyMode) {
+          return;
+        }
 
-            // populate the whole editor data again
-            self.populateEditorData(self.editorData);
-          }
-        });
-      });
-    }, 300);
+        const x = d3.event.x - 5,
+          y = d3.event.y - 5;
 
-    // re-initialize the polygon drag events
-    self.reCallPolygonDragEvents();
+        d3.select(this)
+          .attr("transform", "translate(" + x + "," + y + ")")
+          .style('translate', `${x}px ${y}px`);
 
-    // we set the markers as priority
-    // self.prioritizePolygonOrMarker("markers");
+        const elementIndex = self.editorData?.markers?.findIndex((m => {
+          return Number(m?.offsetX) === Number(data?.offsetX) &&
+            Number(m?.offsetY) === Number(data?.offsetY);
+        }));
+
+        if (elementIndex > -1) {
+          self.editorData.markers[elementIndex].offsetX = x;
+          self.editorData.markers[elementIndex].offsetY = y;
+
+          // populate the whole editor data again
+          self.populateEditorData(self.editorData);
+        }
+      }));
 
     if (typeof callback === "function") {
       callback(data);
     }
   }
 
+  /**
+   * Handle the polygon circle pointer drag and resize
+   * @param referenceInstance {any}
+   * @return {void}
+   */
   handleResizePointerDrag(referenceInstance) {
     const self = this;
     const { drawing, drawMode, points: polyPoints } = self.state;
@@ -480,14 +510,18 @@ class PolygonEditor extends PolygonInstance {
     }
   }
 
+  /**
+   * SVG Element Mouse Up handler
+   * @param referenceInstance {any}
+   * @return {void}
+   */
   handleSvgMouseUp(referenceInstance) {
     const self = this;
     const { dragging, svg, points, drawMode } = self.state;
 
-    if (!drawMode || dragging) {
+    if (!drawMode || dragging || self.state.readOnlyMode) {
       return;
     }
-    ;
 
     self.setState({
       drawing: true,
@@ -525,11 +559,16 @@ class PolygonEditor extends PolygonInstance {
     }
   }
 
+  /**
+   * SVG Element Mouse move handler
+   * @param referenceInstance {any}
+   * @return {void}
+   */
   handleSvgMouseMove(referenceInstance) {
     const self = this;
     const { drawing, startPoint, drawMode } = self.state;
 
-    if (!drawing || !drawMode) {
+    if (!drawing || !drawMode || self.state.readOnlyMode) {
       return;
     }
 
@@ -546,11 +585,19 @@ class PolygonEditor extends PolygonInstance {
       .attr('stroke-width', 1);
   }
 
+  /**
+   * Polygon circle pointer drag events handler
+   * @returns {*}
+   */
   pointerResizeDragBehaviors() {
     const self = this;
 
     return d3.drag()
       .on('drag', function () {
+        if(self.state.readOnlyMode) {
+          return;
+        }
+
         self.handleResizePointerDrag(this);
       }).on('end', function (d) {
         self.setState({ dragging: false });
@@ -563,6 +610,7 @@ class PolygonEditor extends PolygonInstance {
    *   polygons: any[],
    *   markers: any[],
    * }}
+   * @return {void}
    */
   populateEditorData(editorData) {
     const self = this;
@@ -656,6 +704,10 @@ class PolygonEditor extends PolygonInstance {
     self.eraserActivities();
   }
 
+  /**
+   * Set the tools in the no tool selected mode
+   * @return {void}
+   */
   setNoToolSelectedMode() {
     const self = this;
     const { wrapperElementSelector } = self.state;
@@ -674,6 +726,12 @@ class PolygonEditor extends PolygonInstance {
     });
   }
 
+  /**
+   * Set the editor readonly
+   * No tools will work in this mode
+   * @param readOnlyMode {boolean}
+   * @return {void}
+   */
   setReadOnlyMode(readOnlyMode = true) {
     const self = this;
 
@@ -694,10 +752,19 @@ class PolygonEditor extends PolygonInstance {
     });
   }
 
+  /**
+   * Activate the eraser tool
+   * @param eraserMode {boolean}
+   * @return {void}
+   */
   setEraserMode(eraserMode = true) {
     const self = this;
     const { wrapperElementSelector } = self.state;
     const wrapperElement = document.querySelector(wrapperElementSelector);
+
+    if (self.state.readOnlyMode) {
+      return;
+    }
 
     if (eraserMode) {
       self.wrapperUnselectAllTools();
@@ -713,10 +780,19 @@ class PolygonEditor extends PolygonInstance {
     });
   }
 
+  /**
+   * Active the draw mode
+   * @param drawMode {boolean}
+   * @return {void}
+   */
   setDrawMode(drawMode = true) {
     const self = this;
     const { wrapperElementSelector } = self.state;
     const wrapperElement = document.querySelector(wrapperElementSelector);
+
+    if (self.state.readOnlyMode) {
+      return;
+    }
 
     if (drawMode) {
       self.wrapperUnselectAllTools();
@@ -733,10 +809,19 @@ class PolygonEditor extends PolygonInstance {
     });
   }
 
+  /**
+   * Activate the drag mode
+   * @param dragMode {boolean}
+   * @return {void}
+   */
   setDragMode(dragMode = true) {
     const self = this;
     const { wrapperElementSelector } = self.state;
     const wrapperElement = document.querySelector(wrapperElementSelector);
+
+    if (self.state.readOnlyMode) {
+      return;
+    }
 
     if (dragMode) {
       self.wrapperUnselectAllTools();
@@ -752,11 +837,20 @@ class PolygonEditor extends PolygonInstance {
     });
   }
 
+  /**
+   * Activate the marker tool
+   * @param markerMode {boolean}
+   * @return {void}
+   */
   setMarkerMode(markerMode = true) {
     const self = this;
 
     const { wrapperElementSelector } = self.state;
     const wrapperElement = document.querySelector(wrapperElementSelector);
+
+    if (self.state.readOnlyMode) {
+      return;
+    }
 
     if (markerMode) {
       self.wrapperUnselectAllTools();
@@ -770,6 +864,23 @@ class PolygonEditor extends PolygonInstance {
     });
   }
 
+  /**
+   * Set the marker mode to multiple to add multiple markers
+   * @param multipleMarkers {boolean}
+   * @return {void}
+   */
+  setMultipleMarkerMode(multipleMarkers = true) {
+    const self = this;
+
+    self.state.marker = {
+      singlePointer:  multipleMarkers,
+    };
+  }
+
+  /**
+   * Eraser tool activities
+   * @return {void}
+   */
   eraserActivities() {
     const self = this;
     const { svg } = self.state;
@@ -795,6 +906,10 @@ class PolygonEditor extends PolygonInstance {
     });
   }
 
+  /**
+   * Marker tool activities
+   * @return {void}
+   */
   markerActivities() {
     const self = this;
     const { svg } = self.state;
@@ -803,7 +918,7 @@ class PolygonEditor extends PolygonInstance {
       if (self.state.markerMode) {
 
         // disable when we should allow only one marker point
-        if (self.props?.markerProps?.singlePointer && self?.editorData?.markers?.length > 0) {
+        if (self.state?.marker?.singlePointer && self?.editorData?.markers?.length > 0) {
           return;
         }
 
@@ -836,6 +951,12 @@ class PolygonEditor extends PolygonInstance {
     });
   }
 
+  /**
+   * Zoom activities for the entire editor area
+   * @param input {{
+   *   value: any,
+   * } | HTMLInputElement}
+   */
   zoomEditor(input) {
     const self = this;
 
@@ -848,10 +969,18 @@ class PolygonEditor extends PolygonInstance {
     wrapperElement.style.left = '0';
   }
 
+  /**
+   * Polygon drag activities
+   * @return {void}
+   */
   polygonDragActivities() {
 
   }
 
+  /**
+   * Editor default activities on boot
+   * @return {void}
+   */
   editorActivities() {
     const self = this;
 
@@ -901,6 +1030,15 @@ class PolygonEditor extends PolygonInstance {
     });
   }
 
+  /**
+   * Set the editor data in the instance
+   * @param editorData {{
+   *   polygons: any[],
+   *   markers: any[],
+   * }}
+   * @param backgroundSrc {string | undefined}
+   * @return {void}
+   */
   setEditorData(editorData = { polygons: [], markers: [] }, backgroundSrc = undefined) {
     const self = this;
     let clonedEditorData = editorData ? editorData : {
@@ -920,25 +1058,34 @@ class PolygonEditor extends PolygonInstance {
     }
   }
 
+  /**
+   * Reset the editor
+   * Clears editor data as well as the background clip
+   * @return {void}
+   */
   resetEditor() {
     const self = this;
-    self.setEditorData([]);
+
+    self.setEditorData({
+      polygons: [],
+      markers: [],
+    });
+
     self.changeComponentBackground('');
   }
 
+  /**
+   * Contains a bunch of html/svg/xml nodes as string
+   * @returns {{markerIcon: (function(): string)}}
+   */
   htmlTemplates() {
     return {
       /**
        * Get the marker svg icon element as string
-       * @param props {{
-       *  id?: string,
-       *  offsetX: number,
-       *  offsetY: number,
-       * }}
        * @returns {string}
        */
-      markerIcon: (props) => `
-        <g class="marker-point" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" style="translate: ${props?.offsetX}px ${props?.offsetY}px; transform: scale(0.6);" data-id="${props?.id}">
+      markerIcon: () => `
+        <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
           <g transform="translate(-125.000000, -643.000000)">
             <g transform="translate(37.000000, 169.000000)">
               <g transform="translate(78.000000, 468.000000)">

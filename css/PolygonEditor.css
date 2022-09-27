@@ -13,8 +13,12 @@ body {
 
 }
 
-.readonly-mode circle {
+.readonly-mode .polygon-item circle {
     display: none !important;
+}
+
+.readonly-mode .marker-point {
+    cursor: default !important;
 }
 
 .draw-mode {
@@ -37,6 +41,16 @@ body {
     animation: 0.5s erase-shape linear;
 }
 
+.marker-point {
+    transition: all 0.3s !important;
+}
+
+.marker-point path {
+    fill: #ff8b5d;
+    stroke: #e06253;
+    stroke-width: 5px;
+}
+
 @keyframes erase-shape {
     0% {
         opacity: 1;
@@ -49,12 +63,6 @@ body {
     100% {
         opacity: 0;
     }
-}
-
-path {
-    fill: lightsalmon;
-    stroke: salmon;
-    stroke-width: 5px;
 }
 
 h2.title {

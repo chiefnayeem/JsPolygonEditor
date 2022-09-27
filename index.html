@@ -24,6 +24,12 @@
     <button type="button" class="p-1 px-3 rounded bg-red-500 text-white mr-2 hover:opacity-[0.8]" data-type="eraser"
             onclick="window.POLYGON_EDITOR.setEraserMode(true);">Eraser
     </button>
+    <button type="button" class="p-1 px-3 rounded bg-gray-500 text-white mr-2 hover:opacity-[0.8]" data-type="eraser"
+            onclick="window.POLYGON_EDITOR.setReadOnlyMode(!POLYGON_EDITOR.state.readOnlyMode);">Readonly
+    </button>
+    <button type="button" class="p-1 px-3 rounded bg-gray-500 text-white mr-2 hover:opacity-[0.8]" data-type="eraser"
+            onclick="window.POLYGON_EDITOR.setMultipleMarkerMode(!POLYGON_EDITOR.state.marker.singlePointer);">Multiple Marker
+    </button>
   </div>
 
   <div>
@@ -55,25 +61,35 @@
     // backgroundImageSrc: "https://wallpaper.dog/large/10741222.jpg",
     readOnlyMode: true,
     editorData: {
-      polygons: [{
+      "polygons": [{
         "fill": "#704DFC",
         "points": [[62.5, 147.5], [48.33333206176758, 268.3333435058594], [186.6666717529297, 233.3333282470703]],
         "opacity": 0.4,
-        "transformPoints": { "x": 0, "y": 0 }
+        "transformPoints": { "x": -43.333335876464844, "y": -67.5 }
       }, {
         "fill": "#FEE446",
         "points": [[398.3333435058594, 110], [338.3333435058594, 259.1666564941406], [446.6666564941406, 259.1666564941406], [483.3333435058594, 170.8333282470703]],
         "opacity": 0.4,
-        "transformPoints": { "x": 0, "y": 0 }
+        "transformPoints": { "x": -111.66668701171875, "y": -55.83332824707031 }
+      }, {
+        "fill": "#3A8512",
+        "points": [[185.00473022460938, 143.3735809326172], [99.17140197753906, 304.2069091796875], [267.5047302246094, 277.5402526855469], [258.33807373046875, 245.04025268554688]],
+        "opacity": 0.4,
+        "transformPoints": { "x": 299.16668701171875, "y": -2.5 }
       }],
-      markers: [{"offsetX":234,"offsetY":83,"id":"8becd723-004c-488f-b145-2f49f6b1dd97"}],
+      "markers": [{
+        "offsetX": 285.83807373046875,
+        "offsetY": 131.7069091796875,
+        "id": "8becd723-004c-488f-b145-2f49f6b1dd97"
+      }, { "offsetX": 484.1714172363281, "offsetY": 220.04025268554688 }, { "offsetX": 37, "offsetY": 115 }]
     },
     onChangeEditorData(data) {
       document.querySelector("#editorData").value = JSON.stringify(data);
     },
     markerProps: {
-      singlePointer: false,
-    }
+      singlePointer: true,
+    },
+    readOnly: false,
   });
   POLYGON_EDITOR.init();
   POLYGON_EDITOR.changeComponentBackground("https://media.istockphoto.com/vectors/city-map-vector-illustration-vector-id1191674603?k=20&m=1191674603&s=612x612&w=0&h=xPDURSdVzLCZFP8CKoTHb_IdV23-IfZaHXtVrq3nOPw=");
