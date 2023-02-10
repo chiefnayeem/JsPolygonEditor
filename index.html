@@ -24,11 +24,29 @@
     <button type="button" class="p-1 px-3 rounded bg-red-500 text-white mr-2 hover:opacity-[0.8]" data-type="eraser"
             onclick="window.POLYGON_EDITOR.setEraserMode(true);">Eraser
     </button>
-    <button type="button" class="p-1 px-3 rounded bg-gray-500 text-white mr-2 hover:opacity-[0.8]" data-type="eraser"
-            onclick="window.POLYGON_EDITOR.setReadOnlyMode(!POLYGON_EDITOR.state.readOnlyMode);">Readonly
+    <button type="button" class="p-1 px-3 rounded bg-gray-500 text-white mr-2 hover:opacity-[0.8]"
+            data-type="eraser"
+            onclick="window.POLYGON_EDITOR.setReadOnlyMode({ all: true, marker: true, polygon: true, });">
+      Readonly
+    </button>
+    <button type="button" id="button-readonly" class="p-1 px-3 rounded bg-gray-500 text-white mr-2 hover:opacity-[0.8]"
+            data-type="eraser"
+            onclick="window.POLYGON_EDITOR.setReadOnlyMode({ all: false, marker: false, polygon: true, });">
+      Polygon Readonly
+    </button>
+    <button type="button" id="marker-readonly" class="p-1 px-3 rounded bg-gray-500 text-white mr-2 hover:opacity-[0.8]"
+            data-type="eraser"
+            onclick="window.POLYGON_EDITOR.setReadOnlyMode({ all: false, marker: true, polygon: false, });">
+      Marker Readonly
+    </button>
+    <button type="button" id="edit-all" class="p-1 px-3 rounded bg-gray-500 text-white mr-2 hover:opacity-[0.8]"
+            data-type="eraser"
+            onclick="window.POLYGON_EDITOR.setReadOnlyMode({ all: false, marker: false, polygon: false, });">
+      Edit
     </button>
     <button type="button" class="p-1 px-3 rounded bg-gray-500 text-white mr-2 hover:opacity-[0.8]" data-type="eraser"
-            onclick="window.POLYGON_EDITOR.setMultipleMarkerMode(!POLYGON_EDITOR.state.marker.singlePointer);">Multiple Marker
+            onclick="window.POLYGON_EDITOR.setMultipleMarkerMode(!POLYGON_EDITOR.state.marker.singlePointer);">Multiple
+      Marker
     </button>
   </div>
 
@@ -88,9 +106,14 @@
     },
     markerProps: {
       singlePointer: true,
+      readOnly: true,
+    },
+    polygonProps: {
+      readOnly: false,
     },
     readOnly: false,
   });
+
   POLYGON_EDITOR.init();
   POLYGON_EDITOR.changeComponentBackground("https://media.istockphoto.com/vectors/city-map-vector-illustration-vector-id1191674603?k=20&m=1191674603&s=612x612&w=0&h=xPDURSdVzLCZFP8CKoTHb_IdV23-IfZaHXtVrq3nOPw=");
 

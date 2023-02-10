@@ -13,11 +13,27 @@ body {
 
 }
 
+.polygon-readonly-mode {
+
+}
+
+.marker-readonly-mode {
+
+}
+
 .readonly-mode .polygon-item circle {
     display: none !important;
 }
 
 .readonly-mode .marker-point {
+    cursor: default !important;
+}
+
+.polygon-readonly-mode .polygon-item circle {
+    display: none !important;
+}
+
+.marker-readonly-mode .marker-point {
     cursor: default !important;
 }
 
