@@ -63,7 +63,12 @@ class PolygonEditor extends PolygonInstance {
    *  startPoint?: number,
    *  markerProps: {
    *    singlePointer?: boolean,
-   *  }
+   *    readOnly?: boolean,
+   *    drawInsidePolygonOnly?: boolean,
+   *  },
+   *  polygonProps: {
+   *    readOnly?: boolean,
+   *  },
    * }}
    */
   constructor(props) {
@@ -97,6 +102,12 @@ class PolygonEditor extends PolygonInstance {
 
       marker: {
         singlePointer: props?.markerProps?.singlePointer ?? false,
+        readOnlyMode: props?.markerProps?.readOnly ?? false,
+        drawInsidePolygonOnly: props?.markerProps?.drawInsidePolygonOnly ?? false,
+      },
+
+      polygon: {
+        readOnlyMode: props?.polygonProps?.readOnly ?? false,
       },
 
       shapeSettings: {
@@ -112,6 +123,8 @@ class PolygonEditor extends PolygonInstance {
     this.editorToolsClassNames = {
       noToolsSelectedMode: 'no-tool-selected',
       readOnlyMode: 'readonly-mode',
+      polygonReadOnlyMode: 'polygon-readonly-mode',
+      markerReadOnlyMode: 'marker-readonly-mode',
       drawMode: 'draw-mode',
       eraserMode: 'eraser-mode',
       dragMode: 'drag-mode',
@@ -139,6 +152,7 @@ class PolygonEditor extends PolygonInstance {
 
     this.setNoToolSelectedMode = this.setNoToolSelectedMode.bind(this);
     this.setEraserMode = this.setEraserMode.bind(this);
+    this.setReadOnlyModeEditorClasses = this.setReadOnlyModeEditorClasses.bind(this);
     this.setReadOnlyMode = this.setReadOnlyMode.bind(this);
     this.setDrawMode = this.setDrawMode.bind(this);
     this.setDragMode = this.setDragMode.bind(this);
@@ -335,7 +349,7 @@ class PolygonEditor extends PolygonInstance {
 
       // register the drag functionalities for this polygon element
       g.call(d3.drag().on("drag", function (d) {
-        if (!self.state.dragMode || self.state.readOnlyMode) {
+        if (!self.state.dragMode || self.state.readOnlyMode || self.state.polygon.readOnlyMode) {
           return;
         }
 
@@ -414,7 +428,7 @@ class PolygonEditor extends PolygonInstance {
         self.htmlTemplates().markerIcon()
       )
       .on('click', function () {
-        if(self.state.readOnlyMode) {
+        if (self.state.readOnlyMode || self.state.marker.readOnlyMode) {
           return;
         }
 
@@ -434,7 +448,7 @@ class PolygonEditor extends PolygonInstance {
         }
       })
       .call(d3.drag().on("drag", function () {
-        if(self.state.readOnlyMode) {
+        if (self.state.readOnlyMode || self.state.marker.readOnlyMode) {
           return;
         }
 
@@ -594,7 +608,7 @@ class PolygonEditor extends PolygonInstance {
 
     return d3.drag()
       .on('drag', function () {
-        if(self.state.readOnlyMode) {
+        if (self.state.readOnlyMode) {
           return;
         }
 
@@ -617,12 +631,11 @@ class PolygonEditor extends PolygonInstance {
     const { wrapperElementSelector } = self.state;
     const wrapperElement = document.querySelector(wrapperElementSelector);
 
-    // Make readonly when set
-    if (self.state.readOnlyMode) {
-      wrapperElement.classList.add(
-        self.editorToolsClassNames.readOnlyMode
-      );
-    }
+    self.setReadOnlyModeEditorClasses(wrapperElement, {
+      all: self.state.readOnlyMode,
+      polygon: self.state.polygon.readOnlyMode,
+      marker: self.state.marker.readOnlyMode,
+    });
 
     // Make the svg element empty as we are going to populate the array data from beginning
     wrapperElement.querySelector('svg').innerHTML = '';
@@ -705,6 +718,7 @@ class PolygonEditor extends PolygonInstance {
   }
 
   /**
+   /**
    * Set the tools in the no tool selected mode
    * @return {void}
    */
@@ -727,28 +741,94 @@ class PolygonEditor extends PolygonInstance {
   }
 
   /**
-   * Set the editor readonly
-   * No tools will work in this mode
-   * @param readOnlyMode {boolean}
+   * Set the readonly mode classes based on configurations or props
+   * @param wrapperElement {HTMLElement}
+   * @param options {{
+   *   all?: boolean,
+   *   marker?: boolean,
+   *   polygon?: boolean,
+   * }}
+   */
+  setReadOnlyModeEditorClasses(wrapperElement, options) {
+    const self = this;
+
+    function addRegularReadonlyClassName() {
+      wrapperElement.classList.remove(
+        self.editorToolsClassNames.readOnlyMode
+      );
+    }
+
+    function removeRegularReadonlyClassName() {
+      wrapperElement.classList.remove(
+        self.editorToolsClassNames.readOnlyMode
+      );
+    }
+
+    // Make readonly when set
+    if (options?.all) {
+      addRegularReadonlyClassName();
+    }
+
+    // Make the polygon items readonly when set
+    if (options?.polygon) {
+      removeRegularReadonlyClassName();
+
+      wrapperElement.classList.add(
+        self.editorToolsClassNames.polygonReadOnlyMode
+      );
+    }
+
+    // Make the marker items readonly when set
+    if (options?.marker) {
+      removeRegularReadonlyClassName();
+
+      wrapperElement.classList.add(
+        self.editorToolsClassNames.markerReadOnlyMode
+      );
+    }
+  }
+
+  /**
+   * Set the editor or editor elements readonly
+   * No tools or selected tools will work in this mode
+   * @param options {{
+   *   all?: boolean,
+   *   marker?: boolean,
+   *   polygon?: boolean,
+   * }}
    * @return {void}
    */
-  setReadOnlyMode(readOnlyMode = true) {
+  setReadOnlyMode(options) {
     const self = this;
 
     const { wrapperElementSelector } = self.state;
     const wrapperElement = document.querySelector(wrapperElementSelector);
 
-    if (readOnlyMode) {
+    self.setReadOnlyModeEditorClasses(wrapperElement, {
+      all: options?.all,
+      polygon: options?.polygon,
+      marker: options?.marker,
+    });
+
+    if (options?.all || options?.polygon | options?.marker) {
       self.wrapperUnselectAllTools();
-      wrapperElement.classList.add(
-        self.editorToolsClassNames.readOnlyMode
-      );
+      // wrapperElement.classList.add(
+      //   self.editorToolsClassNames.readOnlyMode
+      // );
     } else {
       self.setNoToolSelectedMode();
     }
 
     self.setState({
-      readOnlyMode,
+      readOnlyMode: options?.all ?? false,
+      polygon: {
+        ...self.state.polygon,
+        readOnlyMode: options?.polygon ?? false,
+      },
+      marker: {
+        ...self.state.marker,
+        readOnlyMode: options?.marker ?? false,
+      },
     });
   }
 
@@ -790,7 +870,7 @@ class PolygonEditor extends PolygonInstance {
     const { wrapperElementSelector } = self.state;
     const wrapperElement = document.querySelector(wrapperElementSelector);
 
-    if (self.state.readOnlyMode) {
+    if (self.state.readOnlyMode || self.state.polygon.readOnlyMode) {
       return;
     }
 
@@ -873,7 +953,8 @@ class PolygonEditor extends PolygonInstance {
     const self = this;
 
     self.state.marker = {
-      singlePointer:  multipleMarkers,
+      ...self.state.marker,
+      singlePointer: multipleMarkers,
     };
   }
 
@@ -887,6 +968,10 @@ class PolygonEditor extends PolygonInstance {
 
     svg.selectAll('.polygon-item').on('click', function () {
       const element = this;
+
+      if (self.state.polygon.readOnlyMode) {
+        return;
+      }
 
       if (self.state.eraserMode) {
         if (self.state.confirmOnErase) {
@@ -916,6 +1001,12 @@ class PolygonEditor extends PolygonInstance {
 
     svg.on('click', function () {
       if (self.state.markerMode) {
+
+        if (self.state.marker.drawInsidePolygonOnly) {
+          if (self.editorData.polygons.length > 0 && d3?.event?.target?.nodeName !== "polygon") {
+            return;
+          }
+        }
 
         // disable when we should allow only one marker point
         if (self.state?.marker?.singlePointer && self?.editorData?.markers?.length > 0) {
