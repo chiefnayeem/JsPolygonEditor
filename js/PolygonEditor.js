@@ -64,6 +64,7 @@ class PolygonEditor extends PolygonInstance {
    *  markerProps: {
    *    singlePointer?: boolean,
    *    readOnly?: boolean,
+   *    drawInsidePolygonOnly?: boolean,
    *  },
    *  polygonProps: {
    *    readOnly?: boolean,
@@ -102,6 +103,7 @@ class PolygonEditor extends PolygonInstance {
       marker: {
         singlePointer: props?.markerProps?.singlePointer ?? false,
         readOnlyMode: props?.markerProps?.readOnly ?? false,
+        drawInsidePolygonOnly: props?.markerProps?.drawInsidePolygonOnly ?? false,
       },
 
       polygon: {
@@ -716,6 +718,7 @@ class PolygonEditor extends PolygonInstance {
   }
 
   /**
+   /**
    * Set the tools in the no tool selected mode
    * @return {void}
    */
@@ -998,6 +1001,12 @@ class PolygonEditor extends PolygonInstance {
 
     svg.on('click', function () {
       if (self.state.markerMode) {
+
+        if (self.state.marker.drawInsidePolygonOnly) {
+          if (self.editorData.polygons.length > 0 && d3?.event?.target?.nodeName !== "polygon") {
+            return;
+          }
+        }
 
         // disable when we should allow only one marker point
         if (self.state?.marker?.singlePointer && self?.editorData?.markers?.length > 0) {

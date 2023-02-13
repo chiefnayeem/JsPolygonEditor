@@ -48,6 +48,9 @@
             onclick="window.POLYGON_EDITOR.setMultipleMarkerMode(!POLYGON_EDITOR.state.marker.singlePointer);">Multiple
       Marker
     </button>
+    <button type="button" class="p-1 px-3 rounded bg-orange-500 text-white mr-2 hover:opacity-[0.8]"
+            data-type="eraser"
+            onclick="window.POLYGON_EDITOR.setEditorData({ polygons: [], markers: [], });">Reset</button>
   </div>
 
   <div>
@@ -107,6 +110,7 @@
     markerProps: {
       singlePointer: true,
       readOnly: false,
+      drawInsidePolygonOnly: true,
     },
     polygonProps: {
       readOnly: false,
