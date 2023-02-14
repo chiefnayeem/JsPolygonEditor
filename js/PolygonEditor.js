@@ -1096,7 +1096,6 @@ class PolygonEditor extends PolygonInstance {
       const { svg } = state;
       const { editorData } = self;
 
-
       // Draw the polygons when we have some initial editor data
       if (editorData) {
         self.populateEditorData(editorData);
