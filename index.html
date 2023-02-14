@@ -44,13 +44,19 @@
             onclick="window.POLYGON_EDITOR.setReadOnlyMode({ all: false, marker: false, polygon: false, });">
       Edit
     </button>
-    <button type="button" class="p-1 px-3 rounded bg-gray-500 text-white mr-2 hover:opacity-[0.8]" data-type="eraser"
+    <button type="button" class="p-1 px-3 rounded bg-green-900 text-white mr-2 hover:opacity-[0.8]" data-type="eraser"
             onclick="window.POLYGON_EDITOR.setMultipleMarkerMode(!POLYGON_EDITOR.state.marker.singlePointer);">Multiple
       Marker
     </button>
-    <button type="button" class="p-1 px-3 rounded bg-orange-500 text-white mr-2 hover:opacity-[0.8]"
+    <button type="button" class="p-1 px-3 rounded bg-red-500 text-white mr-2 hover:opacity-[0.8]"
             data-type="eraser"
-            onclick="window.POLYGON_EDITOR.setEditorData({ polygons: [], markers: [], });">Reset</button>
+            onclick="window.POLYGON_EDITOR.resetEditorData();">Reset</button>
+    <button type="button" class="p-1 px-3 rounded bg-red-500 text-white mr-2 hover:opacity-[0.8]"
+            data-type="eraser"
+            onclick="window.POLYGON_EDITOR.clearAllPolygons();">Remove all polygons</button>
+    <button type="button" class="p-1 px-3 rounded bg-red-500 text-white mr-2 hover:opacity-[0.8]"
+            data-type="eraser"
+            onclick="window.POLYGON_EDITOR.clearAllMarkers();">Remove all Markers</button>
   </div>
 
   <div>
