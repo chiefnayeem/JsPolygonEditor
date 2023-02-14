@@ -163,6 +163,9 @@ class PolygonEditor extends PolygonInstance {
     this.resetEditorData = this.resetEditorData.bind(this);
     this.clearAllPolygons = this.clearAllPolygons.bind(this);
     this.clearAllMarkers = this.clearAllMarkers.bind(this);
+    this.getPolygons = this.getPolygons.bind(this);
+    this.getMarkers = this.getMarkers.bind(this);
+    this.getEditorData = this.getEditorData.bind(this);
   }
 
   /**
@@ -1203,6 +1206,30 @@ class PolygonEditor extends PolygonInstance {
     });
 
     self.changeComponentBackground('');
+  }
+
+  /**
+   * Get the polygons data
+   * @return {*[]|[]|*}
+   */
+  getPolygons() {
+    return this.editorData.polygons;
+  }
+
+  /**
+   * Get the polygons data
+   * @return {*[]|[]|*}
+   */
+  getMarkers() {
+    return this.editorData.markers;
+  }
+
+  /**
+   * Get editor data
+   * @return {{polygons: *[], markers: *[]}|{polygons: [], markers: []}}
+   */
+  getEditorData() {
+    return this.editorData;
   }
 
   /**
