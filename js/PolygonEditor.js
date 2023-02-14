@@ -159,6 +159,10 @@ class PolygonEditor extends PolygonInstance {
     this.setMarkerMode = this.setMarkerMode.bind(this);
     this.setMultipleMarkerMode = this.setMultipleMarkerMode.bind(this);
     this.eraserActivities = this.eraserActivities.bind(this);
+    this.setEditorData = this.setEditorData.bind(this);
+    this.resetEditorData = this.resetEditorData.bind(this);
+    this.clearAllPolygons = this.clearAllPolygons.bind(this);
+    this.clearAllMarkers = this.clearAllMarkers.bind(this);
   }
 
   /**
@@ -1147,6 +1151,42 @@ class PolygonEditor extends PolygonInstance {
     if (backgroundSrc && backgroundSrc !== '') {
       self.changeComponentBackground(backgroundSrc);
     }
+  }
+
+  /**
+   * Reset editor data
+   * @return {void}
+   */
+  resetEditorData() {
+    const self = this;
+    self.setEditorData({
+      polygons: [],
+      markers: [],
+    });
+  }
+
+  /**
+   * Clear all polygons
+   * @return {void}
+   */
+  clearAllPolygons() {
+    const self = this;
+    self.setEditorData({
+      ...self.editorData,
+      polygons: [],
+    });
+  }
+
+  /**
+   * Clear all markers
+   * @return {void}
+   */
+  clearAllMarkers() {
+    const self = this;
+    self.setEditorData({
+      ...self.editorData,
+      markers: [],
+    });
   }
 
   /**
