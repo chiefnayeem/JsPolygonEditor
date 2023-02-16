@@ -10,53 +10,68 @@
 </head>
 <body>
 <div class="p-10">
-  <div class="action-buttons" id="polygon-action-buttons">
-    <button type="button" class="p-1 px-3 rounded bg-green-700 text-white mr-2 hover:opacity-[0.8]" data-type="draw"
+  <div class="action-buttons flex flex-wrap gap-[10px]" id="polygon-action-buttons">
+    <button type="button" class="p-1 px-3 rounded bg-green-700 text-white hover:opacity-[0.8]" data-type="draw"
             onclick="window.POLYGON_EDITOR.setDrawMode(true);">Draw
     </button>
-    <button type="button" class="p-1 px-3 rounded bg-cyan-500 text-white mr-2 hover:opacity-[0.8]" data-type="drag"
+    <button type="button" class="p-1 px-3 rounded bg-cyan-500 text-white hover:opacity-[0.8]" data-type="drag"
             onclick="window.POLYGON_EDITOR.setDragMode(true);">Drag
     </button>
-    <button type="button" class="p-1 px-3 rounded bg-orange-500 text-white mr-2 hover:opacity-[0.8]"
+    <button type="button" class="p-1 px-3 rounded bg-orange-500 text-white hover:opacity-[0.8]"
             data-type="eraser"
             onclick="window.POLYGON_EDITOR.setMarkerMode(true);">Add Marker
     </button>
-    <button type="button" class="p-1 px-3 rounded bg-red-500 text-white mr-2 hover:opacity-[0.8]" data-type="eraser"
+    <button type="button" class="p-1 px-3 rounded bg-red-500 text-white hover:opacity-[0.8]" data-type="eraser"
             onclick="window.POLYGON_EDITOR.setEraserMode(true);">Eraser
     </button>
-    <button type="button" class="p-1 px-3 rounded bg-gray-500 text-white mr-2 hover:opacity-[0.8]"
+    <button type="button" class="p-1 px-3 rounded bg-gray-500 text-white hover:opacity-[0.8]"
             data-type="eraser"
             onclick="window.POLYGON_EDITOR.setReadOnlyMode({ all: true, marker: true, polygon: true, });">
       Readonly
     </button>
-    <button type="button" id="button-readonly" class="p-1 px-3 rounded bg-gray-500 text-white mr-2 hover:opacity-[0.8]"
+    <button type="button" id="button-readonly" class="p-1 px-3 rounded bg-gray-500 text-white hover:opacity-[0.8]"
             data-type="eraser"
             onclick="window.POLYGON_EDITOR.setReadOnlyMode({ all: false, marker: false, polygon: true, });">
       Polygon Readonly
     </button>
-    <button type="button" id="marker-readonly" class="p-1 px-3 rounded bg-gray-500 text-white mr-2 hover:opacity-[0.8]"
+    <button type="button" id="marker-readonly" class="p-1 px-3 rounded bg-gray-500 text-white hover:opacity-[0.8]"
             data-type="eraser"
             onclick="window.POLYGON_EDITOR.setReadOnlyMode({ all: false, marker: true, polygon: false, });">
       Marker Readonly
     </button>
-    <button type="button" id="edit-all" class="p-1 px-3 rounded bg-gray-500 text-white mr-2 hover:opacity-[0.8]"
+    <button type="button" id="draw-marker-inside-polygon-only"
+            class="p-1 px-3 rounded bg-gray-500 text-white hover:opacity-[0.8]"
+            data-type="eraser"
+            onclick="window.POLYGON_EDITOR.setDrawMarkerInsidePolygonOnly();">
+      Draw Marker Inside Polygon Only
+    </button>
+    <button type="button" id="draw-marker-everywhere"
+            class="p-1 px-3 rounded bg-gray-500 text-white hover:opacity-[0.8]"
+            data-type="eraser"
+            onclick="window.POLYGON_EDITOR.setDrawMarkerInsidePolygonOnly(false);">
+      Draw Marker Everywhere
+    </button>
+    <button type="button" id="edit-all" class="p-1 px-3 rounded bg-gray-500 text-white hover:opacity-[0.8]"
             data-type="eraser"
             onclick="window.POLYGON_EDITOR.setReadOnlyMode({ all: false, marker: false, polygon: false, });">
       Edit
     </button>
-    <button type="button" class="p-1 px-3 rounded bg-green-900 text-white mr-2 hover:opacity-[0.8]" data-type="eraser"
+    <button type="button" class="p-1 px-3 rounded bg-green-900 text-white hover:opacity-[0.8]" data-type="eraser"
             onclick="window.POLYGON_EDITOR.setMultipleMarkerMode(!POLYGON_EDITOR.state.marker.singlePointer);">Multiple
       Marker
     </button>
-    <button type="button" class="p-1 px-3 rounded bg-red-500 text-white mr-2 hover:opacity-[0.8]"
+    <button type="button" class="p-1 px-3 rounded bg-red-500 text-white hover:opacity-[0.8]"
             data-type="eraser"
-            onclick="window.POLYGON_EDITOR.resetEditorData();">Reset</button>
-    <button type="button" class="p-1 px-3 rounded bg-red-500 text-white mr-2 hover:opacity-[0.8]"
+            onclick="window.POLYGON_EDITOR.resetEditorData();">Reset
+    </button>
+    <button type="button" class="p-1 px-3 rounded bg-red-500 text-white hover:opacity-[0.8]"
             data-type="eraser"
-            onclick="window.POLYGON_EDITOR.clearAllPolygons();">Remove all polygons</button>
-    <button type="button" class="p-1 px-3 rounded bg-red-500 text-white mr-2 hover:opacity-[0.8]"
+            onclick="window.POLYGON_EDITOR.clearAllPolygons();">Remove all polygons
+    </button>
+    <button type="button" class="p-1 px-3 rounded bg-red-500 text-white hover:opacity-[0.8]"
             data-type="eraser"
-            onclick="window.POLYGON_EDITOR.clearAllMarkers();">Remove all Markers</button>
+            onclick="window.POLYGON_EDITOR.clearAllMarkers();">Remove all Markers
+    </button>
   </div>
 
   <div>
