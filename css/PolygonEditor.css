@@ -21,6 +21,10 @@ body {
 
 }
 
+.draw-marker-inside-polygon-only {
+
+}
+
 .readonly-mode .polygon-item circle {
     display: none !important;
 }
@@ -34,6 +38,14 @@ body {
 }
 
 .marker-readonly-mode .marker-point {
+    cursor: default !important;
+}
+
+.draw-marker-inside-polygon-only svg {
+    cursor: not-allowed !important;
+}
+
+.draw-marker-inside-polygon-only svg .polygon-item {
     cursor: default !important;
 }
 

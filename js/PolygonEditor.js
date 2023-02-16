@@ -129,6 +129,7 @@ class PolygonEditor extends PolygonInstance {
       eraserMode: 'eraser-mode',
       dragMode: 'drag-mode',
       markerMode: 'marker-mode',
+      drawMarkerInsidePolygonOnlyMode: 'draw-marker-inside-polygon-only',
     };
 
     this.init = this.init.bind(this);
@@ -158,6 +159,7 @@ class PolygonEditor extends PolygonInstance {
     this.setDragMode = this.setDragMode.bind(this);
     this.setMarkerMode = this.setMarkerMode.bind(this);
     this.setMultipleMarkerMode = this.setMultipleMarkerMode.bind(this);
+    this.setDrawMarkerInsidePolygonOnly = this.setDrawMarkerInsidePolygonOnly.bind(this);
     this.eraserActivities = this.eraserActivities.bind(this);
     this.setEditorData = this.setEditorData.bind(this);
     this.resetEditorData = this.resetEditorData.bind(this);
@@ -966,6 +968,33 @@ class PolygonEditor extends PolygonInstance {
   }
 
   /**
+   * Enable/disable marker only on polygon shape
+   * @param enabled {boolean}
+   */
+  setDrawMarkerInsidePolygonOnly(enabled = true) {
+    const self = this;
+    const { wrapperElementSelector } = self.state;
+    const wrapperElement = document.querySelector(wrapperElementSelector);
+
+    self.setState({
+      marker: {
+        ...self.state.marker,
+        drawInsidePolygonOnly: enabled,
+      },
+    });
+
+    if (enabled) {
+      wrapperElement.classList.add(
+        self.editorToolsClassNames.drawMarkerInsidePolygonOnlyMode,
+      );
+    } else {
+      wrapperElement.classList.remove(
+        self.editorToolsClassNames.drawMarkerInsidePolygonOnlyMode,
+      );
+    }
+  }
+
+  /**
    * Eraser tool activities
    * @return {void}
    */
@@ -1047,6 +1076,10 @@ class PolygonEditor extends PolygonInstance {
         }, 70);
       }
     });
+
+    self.setDrawMarkerInsidePolygonOnly(
+      self.state.marker.drawInsidePolygonOnly
+    );
   }
 
   /**
