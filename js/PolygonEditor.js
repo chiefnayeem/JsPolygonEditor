@@ -984,6 +984,10 @@ class PolygonEditor extends PolygonInstance {
         ...self.state.marker,
         drawInsidePolygonOnly: enabled,
       },
+      polygon: {
+        ...self.state.polygon,
+        readOnlyMode: true,
+      },
     });
 
     const drawInsidePolygonOnlyClassName = this.editorOptionsClassNames.drawMarkerInsidePolygonOnlyMode;
