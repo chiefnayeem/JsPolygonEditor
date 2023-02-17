@@ -129,6 +129,9 @@ class PolygonEditor extends PolygonInstance {
       eraserMode: 'eraser-mode',
       dragMode: 'drag-mode',
       markerMode: 'marker-mode',
+    };
+
+    this.editorOptionsClassNames = {
       drawMarkerInsidePolygonOnlyMode: 'draw-marker-inside-polygon-only',
     };
 
@@ -983,13 +986,15 @@ class PolygonEditor extends PolygonInstance {
       },
     });
 
+    const drawInsidePolygonOnlyClassName = this.editorOptionsClassNames.drawMarkerInsidePolygonOnlyMode;
+
     if (enabled) {
       wrapperElement.classList.add(
-        self.editorToolsClassNames.drawMarkerInsidePolygonOnlyMode,
+        drawInsidePolygonOnlyClassName
       );
     } else {
       wrapperElement.classList.remove(
-        self.editorToolsClassNames.drawMarkerInsidePolygonOnlyMode,
+        drawInsidePolygonOnlyClassName
       );
     }
   }

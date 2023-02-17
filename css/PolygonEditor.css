@@ -2,7 +2,8 @@ body {
     margin: 70px;
     border: 0;
     padding: 0;
-
+    background: #1a1a1a;
+    color: #ffffff;
 }
 
 .no-tool-selected {
@@ -41,12 +42,19 @@ body {
     cursor: default !important;
 }
 
-.draw-marker-inside-polygon-only svg {
+.draw-marker-inside-polygon-only.marker-mode svg
+{
     cursor: not-allowed !important;
 }
 
-.draw-marker-inside-polygon-only svg .polygon-item {
+.draw-marker-inside-polygon-only svg .polygon-item
+{
     cursor: default !important;
+}
+
+.marker-mode svg .polygon-item
+{
+    cursor: pointer !important;
 }
 
 .draw-mode {
@@ -57,8 +65,9 @@ body {
     cursor: url(../icons/eraser.svg), alias;
 }
 
+.draw-marker-inside-polygon-only.drag-mode g,
 .drag-mode g {
-    cursor: grab;
+    cursor: grab !important;
 }
 
 .marker-mode {
