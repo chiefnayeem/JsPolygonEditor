@@ -361,7 +361,7 @@ class PolygonEditor extends PolygonInstance {
 
       // register the drag functionalities for this polygon element
       g.call(d3.drag().on("drag", function (d) {
-        if (!self.state.dragMode || self.state.readOnlyMode || self.state.polygon.readOnlyMode) {
+        if (!self.state.dragMode || self.state.readOnlyMode || self.state.polygon.readOnlyMode || self.state.marker.drawInsidePolygonOnly) {
           return;
         }
 
@@ -983,10 +983,6 @@ class PolygonEditor extends PolygonInstance {
       marker: {
         ...self.state.marker,
         drawInsidePolygonOnly: enabled,
-      },
-      polygon: {
-        ...self.state.polygon,
-        readOnlyMode: true,
       },
     });
 
