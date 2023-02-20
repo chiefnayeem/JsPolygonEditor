@@ -963,6 +963,9 @@ class PolygonEditor extends PolygonInstance {
       wrapperElement.classList.add(
         self.editorToolsClassNames.markerMode
       );
+      wrapperElement.classList.add(
+        self.editorToolsClassNames.polygonReadOnlyMode
+      );
     }
 
     self.setState({
