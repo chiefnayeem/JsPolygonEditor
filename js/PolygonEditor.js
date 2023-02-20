@@ -824,9 +824,23 @@ class PolygonEditor extends PolygonInstance {
 
     if (options?.all || options?.polygon | options?.marker) {
       self.wrapperUnselectAllTools();
-      // wrapperElement.classList.add(
-      //   self.editorToolsClassNames.readOnlyMode
-      // );
+      if(options?.all) {
+        wrapperElement.classList.add(
+          self.editorToolsClassNames.readOnlyMode
+        );
+      }
+
+      if(options?.polygon) {
+        wrapperElement.classList.add(
+          self.editorToolsClassNames.polygonReadOnlyMode
+        );
+      }
+
+      if(options?.marker) {
+        wrapperElement.classList.add(
+          self.editorToolsClassNames.markerReadOnlyMode
+        );
+      }
     } else {
       self.setNoToolSelectedMode();
     }
