@@ -129,6 +129,9 @@ class PolygonEditor extends PolygonInstance {
       eraserMode: 'eraser-mode',
       dragMode: 'drag-mode',
       markerMode: 'marker-mode',
+    };
+
+    this.editorOptionsClassNames = {
       drawMarkerInsidePolygonOnlyMode: 'draw-marker-inside-polygon-only',
     };
 
@@ -358,7 +361,7 @@ class PolygonEditor extends PolygonInstance {
 
       // register the drag functionalities for this polygon element
       g.call(d3.drag().on("drag", function (d) {
-        if (!self.state.dragMode || self.state.readOnlyMode || self.state.polygon.readOnlyMode) {
+        if (!self.state.dragMode || self.state.readOnlyMode || self.state.polygon.readOnlyMode || self.state.marker.drawInsidePolygonOnly) {
           return;
         }
 
@@ -821,9 +824,23 @@ class PolygonEditor extends PolygonInstance {
 
     if (options?.all || options?.polygon | options?.marker) {
       self.wrapperUnselectAllTools();
-      // wrapperElement.classList.add(
-      //   self.editorToolsClassNames.readOnlyMode
-      // );
+      if(options?.all) {
+        wrapperElement.classList.add(
+          self.editorToolsClassNames.readOnlyMode
+        );
+      }
+
+      if(options?.polygon) {
+        wrapperElement.classList.add(
+          self.editorToolsClassNames.polygonReadOnlyMode
+        );
+      }
+
+      if(options?.marker) {
+        wrapperElement.classList.add(
+          self.editorToolsClassNames.markerReadOnlyMode
+        );
+      }
     } else {
       self.setNoToolSelectedMode();
     }
@@ -946,6 +963,9 @@ class PolygonEditor extends PolygonInstance {
       wrapperElement.classList.add(
         self.editorToolsClassNames.markerMode
       );
+      wrapperElement.classList.add(
+        self.editorToolsClassNames.polygonReadOnlyMode
+      );
     }
 
     self.setState({
@@ -983,13 +1003,15 @@ class PolygonEditor extends PolygonInstance {
       },
     });
 
+    const drawInsidePolygonOnlyClassName = this.editorOptionsClassNames.drawMarkerInsidePolygonOnlyMode;
+
     if (enabled) {
       wrapperElement.classList.add(
-        self.editorToolsClassNames.drawMarkerInsidePolygonOnlyMode,
+        drawInsidePolygonOnlyClassName
       );
     } else {
       wrapperElement.classList.remove(
-        self.editorToolsClassNames.drawMarkerInsidePolygonOnlyMode,
+        drawInsidePolygonOnlyClassName
       );
     }
   }
