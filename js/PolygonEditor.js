@@ -65,10 +65,15 @@ class PolygonEditor extends PolygonInstance {
    *    singlePointer?: boolean,
    *    readOnly?: boolean,
    *    drawInsidePolygonOnly?: boolean,
+   *    onDragStart?(): void,
+   *    onDragEnd?(): void,
+   *    onRemove?(): void,
+   *    onAdd?(): void,
    *  },
    *  polygonProps: {
    *    readOnly?: boolean,
    *  },
+   *  defaultEnabledTool?: "add-marker" | "add-polygon",
    * }}
    */
   constructor(props) {
@@ -457,6 +462,10 @@ class PolygonEditor extends PolygonInstance {
 
           // populate the whole editor data again
           self.populateEditorData(self.editorData);
+
+          if (self.props?.markerProps?.onRemove) {
+            self.props?.markerProps?.onRemove();
+          }
         }
       })
       .call(d3.drag().on("drag", function () {
@@ -482,6 +491,14 @@ class PolygonEditor extends PolygonInstance {
 
           // populate the whole editor data again
           self.populateEditorData(self.editorData);
+
+          if (self.props?.markerProps?.onDragStart) {
+            self.props?.markerProps?.onDragStart();
+          }
+        }
+      }).on("end", function () {
+        if (self.props?.markerProps?.onDragEnd) {
+          self.props?.markerProps?.onDragEnd();
         }
       }));
 
@@ -620,7 +637,7 @@ class PolygonEditor extends PolygonInstance {
 
     return d3.drag()
       .on('drag', function () {
-        if (self.state.readOnlyMode) {
+        if (self.state.readOnlyMode || self.state.polygon.readOnlyMode || self.state.marker.drawInsidePolygonOnly) {
           return;
         }
 
@@ -824,19 +841,19 @@ class PolygonEditor extends PolygonInstance {
 
     if (options?.all || options?.polygon | options?.marker) {
       self.wrapperUnselectAllTools();
-      if(options?.all) {
+      if (options?.all) {
         wrapperElement.classList.add(
           self.editorToolsClassNames.readOnlyMode
         );
       }
 
-      if(options?.polygon) {
+      if (options?.polygon) {
         wrapperElement.classList.add(
           self.editorToolsClassNames.polygonReadOnlyMode
         );
       }
 
-      if(options?.marker) {
+      if (options?.marker) {
         wrapperElement.classList.add(
           self.editorToolsClassNames.markerReadOnlyMode
         );
@@ -1094,6 +1111,10 @@ class PolygonEditor extends PolygonInstance {
 
             // populate the whole editor data again
             self.populateEditorData(self.editorData);
+
+            if (self.props?.markerProps?.onAdd) {
+              self.props?.markerProps?.onAdd();
+            }
           });
         }, 70);
       }
@@ -1174,6 +1195,16 @@ class PolygonEditor extends PolygonInstance {
 
       // Marker Mode Activities
       self.markerActivities();
+
+      if (self.props?.defaultEnabledTool) {
+        switch (self.props.defaultEnabledTool) {
+          case "add-marker" :
+            self.setMarkerMode(
+              self.props?.markerProps?.markerMode
+            );
+            break;
+        }
+      }
 
       // Run the mounted activities if found
       if (self.props.mounted && typeof self.props.mounted === "function") {

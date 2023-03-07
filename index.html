@@ -101,7 +101,7 @@
   POLYGON_EDITOR = new PolygonEditor({
     wrapperElementSelector: '.polygon-editor',
     // backgroundImageSrc: "https://wallpaper.dog/large/10741222.jpg",
-    readOnlyMode: true,
+    readOnlyMode: false,
     editorData: {
       "polygons": [{
         "fill": "#704DFC",
@@ -132,11 +132,24 @@
       singlePointer: false,
       readOnly: false,
       drawInsidePolygonOnly: true,
+      onAdd() {
+        console.log("A marker has been added!");
+      },
+      onRemove() {
+        console.log("A marker has been removed!");
+      },
+      onDragStart() {
+        console.log("A marker is being dragged!");
+      },
+      onDragEnd() {
+        console.log("A marker dragging has been stopped!");
+      },
     },
     polygonProps: {
       readOnly: false,
     },
     readOnly: false,
+    defaultEnabledTool: "add-marker",
   });
 
   POLYGON_EDITOR.init();
