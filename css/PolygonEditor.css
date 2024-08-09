@@ -79,7 +79,7 @@ body {
 }
 
 .marker-point {
-    transition: all 0.3s !important;
+    /*transition: all 0.3s !important;*/
 }
 
 .marker-point path {

@@ -123,7 +123,7 @@
         "offsetX": 285.83807373046875,
         "offsetY": 131.7069091796875,
         "id": "8becd723-004c-488f-b145-2f49f6b1dd97"
-      }, { "offsetX": 484.1714172363281, "offsetY": 220.04025268554688 }, { "offsetX": 37, "offsetY": 115 }]
+      }, { "offsetX": 484.1714172363281, "offsetY": 220.04025268554688 }, { "offsetX": 37, "offsetY": 115 }],
     },
     onChangeEditorData(data) {
       document.querySelector("#editorData").value = JSON.stringify(data);
@@ -132,6 +132,7 @@
       singlePointer: false,
       readOnly: false,
       drawInsidePolygonOnly: true,
+      constantSize: true,
       onAdd() {
         console.log("A marker has been added!");
       },

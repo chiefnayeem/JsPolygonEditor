@@ -49,6 +49,7 @@ class PolygonEditor extends PolygonInstance {
   /**
    * @param props {{
    *  wrapperElementSelector?: string,
+   *  zoomRangeInputSliderSelector?: string,
    *  backgroundImageSrc?: string,
    *  shapeOpacity?: number,
    *  shapeOpacity?: number,
@@ -69,9 +70,17 @@ class PolygonEditor extends PolygonInstance {
    *    onDragEnd?(): void,
    *    onRemove?(): void,
    *    onAdd?(): void,
+   *    constantSize?: boolean,
    *  },
    *  polygonProps: {
+   *    fillColor?: string,
+   *    singlePolygon?: boolean,
    *    readOnly?: boolean,
+   *    selectOnClick?: boolean,
+   *    onSelect?: (key: string) => void,
+   *  },
+   *  zoomProps: {
+   *    canvasOverflow?: boolean,
    *  },
    *  defaultEnabledTool?: "add-marker" | "add-polygon",
    * }}
@@ -83,6 +92,7 @@ class PolygonEditor extends PolygonInstance {
 
     this.state = {
       wrapperElementSelector: props?.wrapperElementSelector ?? '.polygon-editor',
+      zoomRangeInputSliderSelector: props?.zoomRangeInputSliderSelector,
       backgroundImageSrc: props?.backgroundImageSrc,
       dragging: false,
       drawing: false,
@@ -109,10 +119,19 @@ class PolygonEditor extends PolygonInstance {
         singlePointer: props?.markerProps?.singlePointer ?? false,
         readOnlyMode: props?.markerProps?.readOnly ?? false,
         drawInsidePolygonOnly: props?.markerProps?.drawInsidePolygonOnly ?? false,
+        constantSize: props?.markerProps?.constantSize,
       },
 
       polygon: {
+        key: props?.polygonProps?.key ?? undefined,
+        fillColor: props?.polygonProps?.fillColor ?? undefined,
         readOnlyMode: props?.polygonProps?.readOnly ?? false,
+        singlePolygon: props?.polygonProps?.singlePolygon ?? false,
+        selectOnClick: props?.polygonProps?.selectOnClick ?? false,
+      },
+
+      zoomProps: {
+        canvasOverflow: props?.zoomProps?.canvasOverflow,
       },
 
       shapeSettings: {
@@ -284,11 +303,22 @@ class PolygonEditor extends PolygonInstance {
     const { points, shapeSettings, transformPoints } = self.state;
 
     const polygonData = {
-      fill: self.getRandomColor(),
+      key: self.state.polygon.key ?? self?.generateUUID(),
+      fill: self.state.polygon.fillColor ?? self.getRandomColor(),
       points,
       opacity: shapeSettings?.shapeOpacity,
       transformPoints,
+      highlighted: !!self.state.polygon.key,
+      noDragPoints: false,
     };
+
+    if(self?.state?.polygon?.key) {
+      polygonData.key = self?.state?.polygon?.key;
+    }
+
+    if(self.editorData.polygons == null) {
+      self.editorData.polygons = [];
+    }
 
     // Append to the editor data for later usage
     self.editorData.polygons.push(polygonData);
@@ -304,9 +334,17 @@ class PolygonEditor extends PolygonInstance {
   /**
    * Draw a polygon shape
    * @param data {{
-   *  fill: string,
+   *  key?: string,
+   *  fillColor: string,
    *  opacity: number,
    *  points: any[],
+   *  highlighted?: boolean,
+   *  noDragPoints?: boolean,
+   *  dragDisabled?: boolean,
+   *  transformPoints?: {
+   *    x?: number,
+   *    y?: number,
+   *  }
    * }}
    * @param index {number}
    * @return {void}
@@ -326,7 +364,19 @@ class PolygonEditor extends PolygonInstance {
     let polygon = g.append('polygon')
       .attr('points', points)
       .style('fill', fill)
-      .style('opacity', opacity);
+      .style('opacity', opacity)
+      .on('click', function() {
+        if(self?.state?.polygon?.selectOnClick && !self?.state?.eraserMode) {
+          self.selectPolygonByKey({
+            key: data?.key,
+            fillColor: data?.fillColor,
+          });
+
+          if(self?.props?.polygonProps?.onSelect) {
+            self?.props?.polygonProps?.onSelect(data?.key);
+          }
+        }
+      });
 
     if (index > -1) {
       g.attr('data-index', index);
@@ -370,6 +420,10 @@ class PolygonEditor extends PolygonInstance {
           return;
         }
 
+        if(data?.dragDisabled) {
+          return;
+        }
+
         const x = d.x = d3.event.x;
         const y = d.y = d3.event.y;
 
@@ -391,22 +445,24 @@ class PolygonEditor extends PolygonInstance {
       }));
     }
 
-    for (let i = 0; i < points.length; i++) {
-      let circle = g.selectAll('circles')
-        .data([points[i]])
-        .enter()
-        .append('circle')
-        .attr('cx', points[i][0])
-        .attr('cy', points[i][1])
-        .attr('r', 4)
-        .attr('fill', '#FDBC07')
-        .attr('stroke', '#000')
-        .attr('is-handle', 'true')
-        .classed("handle", true)
-        .style("cursor", "move");
+    if(!data?.noDragPoints) {
+      for (let i = 0; i < points.length; i++) {
+        let circle = g.selectAll('circles')
+          .data([points[i]])
+          .enter()
+          .append('circle')
+          .attr('cx', points[i][0])
+          .attr('cy', points[i][1])
+          .attr('r', 4)
+          .attr('fill', '#FDBC07')
+          .attr('stroke', '#000')
+          .attr('is-handle', 'true')
+          .classed("handle", true)
+          .style("cursor", "move");
 
-      // register the circle pointer drag functionalities
-      g.selectAll('circle').call(dragger);
+        // register the circle pointer drag functionalities
+        g.selectAll('circle').call(dragger);
+      }
     }
 
     self.setState({
@@ -436,11 +492,29 @@ class PolygonEditor extends PolygonInstance {
     const uuid = self.utils.uuidv4();
     const { svg } = self.state;
 
+    let scale = 0.6;
+
+    if (self?.state?.marker?.constantSize) {
+      /**
+       * @type {HTMLInputElement}
+       */
+      let zoomRangeSliderInput = document.querySelector(self.state.zoomRangeInputSliderSelector);
+
+      if(zoomRangeSliderInput) {
+        const currentZoomValue = zoomRangeSliderInput?.value;
+        const scaleFactor = currentZoomValue / 15;
+        scale = (1 / scaleFactor);
+      }
+    }
+
     svg.append('g')
       .attr('class', 'marker-point')
       .attr('data-id', uuid)
+      .attr('initial-scale', '0.6')
+      .attr('initial-offsetX', data?.offsetX)
+      .attr('initial-offsetY', data?.offsetY)
       .style('translate', `${data?.offsetX}px ${data?.offsetY}px`)
-      .style('transform', 'scale(0.6)')
+      .style('transform', `scale(${scale})`)
       .html(
         self.htmlTemplates().markerIcon()
       )
@@ -564,6 +638,18 @@ class PolygonEditor extends PolygonInstance {
 
     if (!drawMode || dragging || self.state.readOnlyMode) {
       return;
+    }
+
+    if(self.state.polygon.singlePolygon && self.editorData?.polygons?.length > 0) {
+      return;
+    }
+
+    if(self.state.polygon.key) {
+      const polygonIndex = self.editorData?.polygons?.findIndex(p => p?.key === self.state.polygon.key);
+
+      if(polygonIndex > -1) {
+        return;
+      }
     }
 
     self.setState({
@@ -1141,6 +1227,16 @@ class PolygonEditor extends PolygonInstance {
     wrapperElement.style.transform = `scale(${currentZoomValue / 20})`;
     // wrapperElement.style.MozTransform = `scale(${currentZoomValue / 20})`;
     wrapperElement.style.left = '0';
+
+    if (self?.state?.marker?.constantSize) {
+      const scaleFactor = currentZoomValue / 15;
+      const markerScale = 1 / scaleFactor;
+
+      const markerElements = wrapperElement.querySelectorAll('.marker-point');
+      markerElements?.forEach((markerElement) => {
+        markerElement.style.transform = `scale(${markerScale})`;
+      });
+    }
   }
 
   /**
@@ -1239,6 +1335,110 @@ class PolygonEditor extends PolygonInstance {
     if (backgroundSrc && backgroundSrc !== '') {
       self.changeComponentBackground(backgroundSrc);
     }
+  }
+
+  /**
+   * Select Polygon item
+   * @param props {{
+   *     key: string,
+   *     fillColor: string,
+   * }}
+   * @returns {void}
+   */
+  selectPolygonByKey(props) {
+    const self = this;
+    const {key, fillColor} = props;
+    const { wrapperElementSelector } = self.state;
+    const wrapperElement = document.querySelector(wrapperElementSelector);
+
+    self.state.polygon.key = key;
+    self.state.polygon.fillColor = fillColor;
+
+    const polygonsData = [...(self.editorData?.polygons ?? [])];
+
+    const selectedKeyIndex = polygonsData?.findIndex((p) => p?.key?.toString() === key?.toString());
+    if(selectedKeyIndex > -1) {
+      const polygonItem = polygonsData[selectedKeyIndex];
+      polygonItem.highlighted = true;
+      polygonItem.noDragPoints = false;
+      polygonItem.dragDisabled = false;
+      polygonsData?.splice(selectedKeyIndex, 1);
+
+      // Disable the drag pointer for these items
+      polygonsData?.forEach((item) => {
+        item.highlighted = false;
+        item.noDragPoints = true;
+        item.dragDisabled = true;
+      });
+
+      polygonsData.push(polygonItem);
+      self.setDragMode();
+    } else {
+      polygonsData?.forEach((item) => {
+        item.highlighted = false;
+        item.noDragPoints = true;
+        item.dragDisabled = true;
+      });
+
+      self.wrapperUnselectAllTools();
+      wrapperElement.classList.add(
+        self.editorToolsClassNames.drawMode
+      );
+      wrapperElement.classList.add(
+        self.editorToolsClassNames.dragMode
+      );
+      self.setState({
+        drawMode: true,
+        dragMode: true,
+      });
+    }
+
+    self.editorData.polygons = polygonsData;
+    self.setEditorData(self.editorData);
+  }
+
+  /**
+   * Delete polygon item using a key
+   * @param key {string}
+   * @returns {void}
+   */
+  deletePolygonByKey(key) {
+    const self = this;
+    const polygonsData = [...(self.editorData?.polygons ?? [])];
+
+    const selectedKeyIndex = polygonsData?.findIndex((p) => p?.key?.toString() === key?.toString());
+    if(selectedKeyIndex > -1) {
+      polygonsData?.splice(selectedKeyIndex, 1);
+    }
+
+    polygonsData?.forEach((item) => {
+      item.highlighted = false;
+      item.noDragPoints = true;
+      item.dragDisabled = true;
+    });
+
+    self.editorData.polygons = polygonsData;
+    self.setEditorData(self.editorData);
+  }
+
+  /**
+   *
+   * @param props {{
+   *     key: string,
+   *     color: string,
+   * }}
+   * @returns {void}
+   */
+  changePolygonItemColor(props) {
+    const polygonsData = [...(this.editorData?.polygons ?? [])];
+    const polygonItemIndex = polygonsData?.findIndex(p => p?.key === props?.key);
+
+    if(polygonItemIndex > -1) {
+      polygonsData[polygonItemIndex].fill = props?.color;
+    }
+
+    this.editorData.polygons = polygonsData;
+    this.setEditorData(this.editorData);
   }
 
   /**
